@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:layout_margin="12dp"
+    android:background="#F5F2D0"
+    app:cardCornerRadius="16dp">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingStart="12dp">
+
+            <TextView
+                android:id="@+id/tvVenueName"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:text="@string/venue_name"
+                android:textColor="#333"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAvailability"
+                android:layout_width="127dp"
+                android:layout_height="wrap_content"
+                android:text="@string/available"
+                android:textColor="#4CAF50"
+                android:textSize="9sp" />
+
+            <TextView
+                android:id="@+id/tvDistance"
+                android:layout_width="127dp"
+                android:layout_height="wrap_content"
+                android:text="@string/distance"
+                android:textColor="#888"
+                android:textSize="8sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnReserve"
+            android:text="@string/reserve"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#E6D8B9"
+            android:textColor="#333"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
