@@ -6,21 +6,25 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class HomeActivity extends AppCompatActivity {
-    // For a real app, use RecyclerView for the venue list
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_home); // Make sure your XML is named activity_home.xml
 
-        // Example: Find the first Reserve button and set a click listener
-        Button btnReserve = findViewById(R.id.btnReserve); // Set unique IDs for each button in your layout or use RecyclerView
-        if (btnReserve != null) {
-            btnReserve.setOnClickListener(v -> {
-                startActivity(new Intent(this, BookingActivity.class));
-            });
-        }
+        // Find the buttons
+        Button btn1Book = findViewById(R.id.btn1Book);
+        Button btn2Book = findViewById(R.id.btn2Book);
+        Button btn3Book = findViewById(R.id.btn3Book);
 
-        // TODO: Set up bottom navigation listeners
+        // Set click listeners for each button
+        btn1Book.setOnClickListener(v -> goToBooking());
+        btn2Book.setOnClickListener(v -> goToBooking());
+        btn3Book.setOnClickListener(v -> goToBooking());
+    }
+
+    private void goToBooking() {
+        Intent intent = new Intent(HomeActivity.this, BookingActivityYMCA.class);
+        startActivity(intent);
     }
 }

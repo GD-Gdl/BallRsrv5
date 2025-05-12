@@ -35,11 +35,12 @@
 
         <EditText
             android:id="@+id/etEmail"
-            android:hint="Email or Contact Number"
-            android:background="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            android:background="@android:color/transparent"
+            android:hint="Email or Contact Number"
+            android:minHeight="48dp" />
 
         <View
             android:layout_width="match_parent"
@@ -48,13 +49,14 @@
 
         <EditText
             android:id="@+id/etPassword"
-            android:hint="Password"
-            android:inputType="textPassword"
-            android:background="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            android:background="@android:color/transparent"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:minHeight="48dp" />
 
         <View
             android:layout_width="match_parent"
@@ -79,13 +81,13 @@
             android:textColor="#333"
             android:layout_marginTop="8dp"/>
 
-        <TextView
-            android:text="Continue as guest"
-            android:textColor="#888"
-            android:gravity="center"
+        <Button
+            android:id="@+id/btnGuest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textSize="14sp"/>
+            android:backgroundTint="#FAF9E6"
+            android:text="Continue as guest"
+            android:textColor="#050505" />
+
     </LinearLayout>
 </LinearLayout>
