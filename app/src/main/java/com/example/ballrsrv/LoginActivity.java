@@ -8,8 +8,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
-    private EditText etEmail, etPassword;
-    private Button btnLogin, btnSignUp, btnGuest;
+    EditText etEmail, etPassword;
+    Button btnLogin, btnSignUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,29 +20,27 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnSignUp = findViewById(R.id.btnSignUp);
-        btnGuest = findViewById(R.id.btnGuest);
 
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Please fill all fields",
-                        Toast.LENGTH_SHORT).show();
-                return;
+            // Check for admin credentials
+            if (email.equals("123") && password.equals("123")) {
+                // Show success message
+                Toast.makeText(this, "Welcome Admin!", Toast.LENGTH_SHORT).show();
+                // Navigate to AdminActivity
+                startActivity(new Intent(this, AdminActivity.class));
+                finish(); // Close the login activity
+            } else {
+                // Regular user login
+                // TODO: Add regular user authentication logic
+                startActivity(new Intent(this, HomeActivity.class));
             }
-
-            // For now, just navigate to HomeActivity
-            // TODO: Add proper authentication logic later
-            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-            finish(); // Close login activity
         });
 
         btnSignUp.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, SignUpActivity.class));
-        });
-        btnGuest.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, VenueCard.class));
+            startActivity(new Intent(this, SignUpActivity.class));
         });
     }
 }

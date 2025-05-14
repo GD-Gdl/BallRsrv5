@@ -24,7 +24,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void goToBooking() {
-        Intent intent = new Intent(HomeActivity.this, BookingActivityYMCA.class);
+        Intent intent = new Intent(HomeActivity.this, BookingActivity.class);
         startActivity(intent);
     }
 }

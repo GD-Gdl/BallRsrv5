@@ -10,10 +10,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.regex.Pattern;
 
 public class SignUpActivity extends AppCompatActivity {
+    Button btnCreate;
     private EditText etEmailOrContact;
     private EditText etPassword;
     private EditText etConfirmPassword;
-    private Button btnCreate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +26,10 @@ public class SignUpActivity extends AppCompatActivity {
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnCreate = findViewById(R.id.btnCreate);
 
+        btnCreate.setOnClickListener(v -> {
+            // TODO: Add sign up logic
+            finish(); // Go back to login
+        });
         btnCreate.setOnClickListener(v -> handleSignUp());
     }
 

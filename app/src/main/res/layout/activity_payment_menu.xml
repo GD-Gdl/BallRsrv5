@@ -13,38 +13,38 @@
         app:srcCompat="@drawable/screenshot_2025_05_08_005340" />
 
     <LinearLayout
-        android:orientation="vertical"
-        android:background="#888"
-        android:padding="24dp"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:background="#E6D8B9"
+        android:orientation="vertical"
+        android:padding="24dp"
         android:radius="16dp">
 
         <TextView
-            android:text="fee per hour : 750"
-            android:textColor="#FFF"
-            android:textSize="18sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:text="fee per hour : 750"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
 
         <TextView
-            android:text="Choose payment option"
-            android:textColor="#FFF"
-            android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_marginTop="12dp"
-            android:layout_gravity="center"/>
+            android:text="Choose payment option"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:gravity="center"
-            android:layout_marginTop="16dp">
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnGcash"

@@ -5,14 +5,14 @@ import android.os.Bundle;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class BookingActivityYMCA extends AppCompatActivity {
+public class PaymentMenu extends AppCompatActivity {
     Button btnGcash;
     Button btnCash;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_booking_ymca);
+        setContentView(R.layout.activity_payment_menu);
 
         btnGcash = findViewById(R.id.btnGcash);
         btnCash = findViewById(R.id.btnCash);

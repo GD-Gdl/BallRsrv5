@@ -48,10 +48,19 @@
             android:exported="false"
             android:label="Payment Status" />
         <activity
-            android:name=".BookingActivityYMCA"
+            android:name=".PaymentMenu"
             android:exported="false"
             android:label="Booking" />
 
+        <activity
+            android:name=".AdminActivity"
+            android:exported="false"
+            android:label="Admin" />
+
+        <activity
+            android:name=".BookingActivity"
+            android:exported="false"
+            android:label="Booking" />
     </application>
 
 </manifest>
