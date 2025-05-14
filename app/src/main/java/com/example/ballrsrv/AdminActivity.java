@@ -43,8 +43,8 @@ public class AdminActivity extends AppCompatActivity {
         });
 
         requestsCard.setOnClickListener(v -> {
-            // TODO: Navigate to requests management
-            Toast.makeText(this, "Requests Management", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, RequestsActivity.class);
+            startActivity(intent);
         });
 
         logoutButton.setOnClickListener(v -> {

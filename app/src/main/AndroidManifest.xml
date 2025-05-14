@@ -61,6 +61,11 @@
             android:name=".BookingActivity"
             android:exported="false"
             android:label="Booking" />
+
+        <activity
+            android:name=".RequestsActivity"
+            android:exported="false"
+            android:label="Requests" />
     </application>
 
 </manifest>
