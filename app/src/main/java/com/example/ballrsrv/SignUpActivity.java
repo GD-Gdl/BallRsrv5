@@ -6,40 +6,42 @@ import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import java.util.regex.Pattern;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class SignUpActivity extends AppCompatActivity {
-    Button btnCreate;
-    private EditText etEmailOrContact;
-    private EditText etPassword;
-    private EditText etConfirmPassword;
+
+    private Button btnCreate;
+    private EditText etEmailOrContact, etPassword, etConfirmPassword;
+    private DatabaseReference databaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        // Initialize views
+        databaseRef = FirebaseDatabase.getInstance("https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("Users");
+
         etEmailOrContact = findViewById(R.id.etEmailOrContact);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnCreate = findViewById(R.id.btnCreate);
 
-        btnCreate.setOnClickListener(v -> {
-            // TODO: Add sign up logic
-            finish(); // Go back to login
-        });
         btnCreate.setOnClickListener(v -> handleSignUp());
     }
 
     private void handleSignUp() {
-        // Get input values
         String emailOrContact = etEmailOrContact.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-        // Validate inputs
         if (TextUtils.isEmpty(emailOrContact)) {
             etEmailOrContact.setError("Email or Contact Number is required");
             return;
@@ -55,47 +57,53 @@ public class SignUpActivity extends AppCompatActivity {
             return;
         }
 
-        // Validate email/contact format
-        if (!isValidEmailOrContact(emailOrContact)) {
-            etEmailOrContact.setError("Invalid email or contact number format");
-            return;
-        }
+        // ❌ Removed email/contact format validation
+        // ❌ Removed password length check
 
-        // Validate password length
-        if (password.length() < 6) {
-            etPassword.setError("Password must be at least 6 characters");
-            return;
-        }
-
-        // Check if passwords match
         if (!password.equals(confirmPassword)) {
             etConfirmPassword.setError("Passwords do not match");
             return;
         }
 
-        // TODO: Add your user registration logic here
-        // For example, save to database or make API call
-
-        // Show success message
-        Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show();
-
-        // Create intent to navigate to HomeActivity
-        Intent intent = new Intent(SignUpActivity.this, HomeActivity.class);
-        // Add any extra data you want to pass to HomeActivity
-        intent.putExtra("email", emailOrContact);
-        // Clear the activity stack so user can't go back to signup/login
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish(); // Close the current activity
+        checkIfUserExists(emailOrContact, password);
     }
 
-    private boolean isValidEmailOrContact(String input) {
-        // Email regex pattern
-        String emailPattern = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$";
-        // Phone number pattern (adjust based on your requirements)
-        String phonePattern = "^[0-9]{10,11}$";
+    private void checkIfUserExists(String emailOrContact, String password) {
+        databaseRef.orderByChild("identifier").equalTo(emailOrContact)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            etEmailOrContact.setError("User already exists");
+                        } else {
+                            createUser(emailOrContact, password);
+                        }
+                    }
 
-        return Pattern.compile(emailPattern, Pattern.CASE_INSENSITIVE).matcher(input).matches() ||
-                Pattern.compile(phonePattern).matcher(input).matches();
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(SignUpActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void createUser(String emailOrContact, String password) {
+        String userId = databaseRef.push().getKey();
+        if (userId == null) return;
+
+        User user = new User(emailOrContact, password);
+
+        databaseRef.child(userId).setValue(user).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(SignUpActivity.this, "Account created successfully!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(SignUpActivity.this, HomeActivity.class);
+                intent.putExtra("email", emailOrContact);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            } else {
+                Toast.makeText(SignUpActivity.this, "Failed to create account", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
