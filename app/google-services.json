@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "385244781137",
+    "firebase_url": "https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "ballrsrv-a94eb",
+    "storage_bucket": "ballrsrv-a94eb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:385244781137:android:7f3f18cef40149ec613670",
+        "android_client_info": {
+          "package_name": "com.example.ballrsrv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkGFq_m1pQUZoiTmIciz4Gj_OJlTFY3LE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
