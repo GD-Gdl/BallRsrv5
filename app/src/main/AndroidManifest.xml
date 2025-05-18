@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Internet Permission -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,61 +15,88 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BallRsrv"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
+        <!-- Login Activity (Launcher) -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:label="Login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Sign Up Activity -->
         <activity
             android:name=".SignUpActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize"
-            android:label="Sign Up" />
+            android:label="Sign Up"
+            android:parentActivityName=".LoginActivity" />
 
+        <!-- Home Activity -->
         <activity
             android:name=".HomeActivity"
             android:exported="false"
-            android:label="Home" />
+            android:label="Home"
+            android:parentActivityName=".LoginActivity" />
 
+        <!-- Admin Activity -->
         <activity
-            android:name=".VenueCard"
+            android:name=".AdminActivity"
             android:exported="false"
-            android:label="Venue Card" />
+            android:label="Admin Dashboard"
+            android:parentActivityName=".HomeActivity" />
+
+        <!-- Booking Activity -->
+        <activity
+            android:name=".BookingActivity"
+            android:exported="false"
+            android:label="Book Court"
+            android:parentActivityName=".HomeActivity" />
+
+        <!-- Requests Activity -->
+        <activity
+            android:name=".RequestsActivity"
+            android:exported="false"
+            android:label="Booking Requests"
+            android:parentActivityName=".AdminActivity" />
+
+        <!-- Payment Activities -->
+        <activity
+            android:name=".PaymentMenu"
+            android:exported="false"
+            android:label="Payment Options"
+            android:parentActivityName=".BookingActivity" />
 
         <activity
             android:name=".PaymentModeActivityCash"
             android:exported="false"
-            android:label="Payment Mode" />
+            android:label="Cash Payment"
+            android:parentActivityName=".PaymentMenu" />
+
         <activity
             android:name=".PaymentStatusActivityGcaash"
             android:exported="false"
-            android:label="Payment Status" />
-        <activity
-            android:name=".PaymentMenu"
-            android:exported="false"
-            android:label="Booking" />
+            android:label="GCash Payment"
+            android:parentActivityName=".PaymentMenu" />
 
+        <!-- Venue Card Activity -->
         <activity
-            android:name=".AdminActivity"
+            android:name=".VenueCard"
             android:exported="false"
-            android:label="Admin" />
+            android:label="Venue Details"
+            android:parentActivityName=".HomeActivity" />
 
-        <activity
-            android:name=".BookingActivity"
-            android:exported="false"
-            android:label="Booking" />
+        <!-- Firebase Configuration -->
+        <meta-data
+            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:value="none" />
 
-        <activity
-            android:name=".RequestsActivity"
-            android:exported="false"
-            android:label="Requests" />
     </application>
 
 </manifest>
