@@ -134,6 +134,9 @@ public class BookingActivity extends AppCompatActivity {
                     currentDate,
                     timeStr
                 );
+                request.setDuration(duration);
+                request.setTotalPrice(totalPrice);
+                request.setPaymentStatus("pending");
 
                 // Save to Firebase
                 pendingRequestsRef.child(requestId).setValue(request)
@@ -142,6 +145,7 @@ public class BookingActivity extends AppCompatActivity {
                         Intent intent = new Intent(this, PaymentMenu.class);
                         intent.putExtra("total_price", totalPrice);
                         intent.putExtra("booking_id", requestId);
+                        intent.putExtra("duration", duration);
                         startActivity(intent);
                         finish();
                     })

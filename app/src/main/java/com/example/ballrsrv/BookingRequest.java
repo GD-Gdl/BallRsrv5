@@ -7,6 +7,10 @@ public class BookingRequest {
     private String status; // "pending", "accepted", "denied"
     private String date;
     private String timeSlot;
+    private int duration;
+    private double totalPrice;
+    private String paymentStatus;
+    private String paymentMethod;
 
     // Required empty constructor for Firebase
     public BookingRequest() {
@@ -19,6 +23,7 @@ public class BookingRequest {
         this.status = status;
         this.date = date;
         this.timeSlot = timeSlot;
+        this.paymentStatus = "pending";
     }
 
     public String getId() {
@@ -67,5 +72,37 @@ public class BookingRequest {
 
     public void setTimeSlot(String timeSlot) {
         this.timeSlot = timeSlot;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(double totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 }

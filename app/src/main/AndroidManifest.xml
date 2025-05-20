@@ -66,6 +66,13 @@
             android:label="Booking Requests"
             android:parentActivityName=".AdminActivity" />
 
+        <!-- Booking Status Activity -->
+        <activity
+            android:name=".BookingStatusActivity"
+            android:exported="false"
+            android:label="Booking Status"
+            android:parentActivityName=".HomeActivity" />
+
         <!-- Payment Activities -->
         <activity
             android:name=".PaymentMenu"

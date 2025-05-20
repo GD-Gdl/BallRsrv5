@@ -19,15 +19,22 @@ public class HomeActivity extends AppCompatActivity {
         Button btn1Book = findViewById(R.id.btn1Book);
         Button btn2Book = findViewById(R.id.btn2Book);
         Button btn3Book = findViewById(R.id.btn3Book);
+        Button btnViewStatus = findViewById(R.id.btnViewStatus);
 
         btn1Book.setOnClickListener(v -> goToBooking());
         btn2Book.setOnClickListener(v -> goToBooking());
         btn3Book.setOnClickListener(v -> goToBooking());
+        btnViewStatus.setOnClickListener(v -> viewBookingStatus());
     }
 
     private void goToBooking() {
         Intent intent = new Intent(HomeActivity.this, BookingActivity.class);
         intent.putExtra("email", userIdentifier); // ✅ Forward the identifier
+        startActivity(intent);
+    }
+
+    private void viewBookingStatus() {
+        Intent intent = new Intent(HomeActivity.this, BookingStatusActivity.class);
         startActivity(intent);
     }
 }

@@ -19,6 +19,7 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
     private List<BookingRequest> requests;
     private DatabaseReference acceptedRequestsRef;
     private DatabaseReference pendingRequestsRef;
+    private DatabaseReference deniedRequestsRef;
     private ValueEventListener requestsListener;
 
     @Override
@@ -29,6 +30,7 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
         // Initialize Firebase Database references
         pendingRequestsRef = FirebaseDatabase.getInstance().getReference("pending_requests");
         acceptedRequestsRef = FirebaseDatabase.getInstance().getReference("accepted_requests");
+        deniedRequestsRef = FirebaseDatabase.getInstance().getReference("denied_requests");
 
         recyclerView = findViewById(R.id.recyclerView);
         requests = new ArrayList<>();
@@ -78,10 +80,12 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
         // Remove from pending requests
         pendingRequestsRef.child(request.getId()).removeValue()
             .addOnSuccessListener(aVoid -> {
+                // Update status to accepted
+                request.setStatus("accepted");
                 // Add to accepted requests
                 acceptedRequestsRef.child(request.getId()).setValue(request)
                     .addOnSuccessListener(aVoid2 -> {
-                        Toast.makeText(this, "Court reserved, booking accepted.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Booking request accepted", Toast.LENGTH_SHORT).show();
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(this, "Failed to save accepted booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -97,7 +101,16 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
         // Remove from pending requests
         pendingRequestsRef.child(request.getId()).removeValue()
             .addOnSuccessListener(aVoid -> {
-                Toast.makeText(this, "Booking request denied", Toast.LENGTH_SHORT).show();
+                // Update status to denied
+                request.setStatus("denied");
+                // Add to denied requests
+                deniedRequestsRef.child(request.getId()).setValue(request)
+                    .addOnSuccessListener(aVoid2 -> {
+                        Toast.makeText(this, "Booking request denied", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to save denied booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
             })
             .addOnFailureListener(e -> {
                 Toast.makeText(this, "Failed to deny booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
