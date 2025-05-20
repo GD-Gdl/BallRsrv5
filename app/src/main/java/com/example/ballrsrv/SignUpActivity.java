@@ -57,8 +57,7 @@ public class SignUpActivity extends AppCompatActivity {
             return;
         }
 
-        // ❌ Removed email/contact format validation
-        // ❌ Removed password length check
+
 
         if (!password.equals(confirmPassword)) {
             etConfirmPassword.setError("Passwords do not match");
