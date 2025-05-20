@@ -11,7 +11,7 @@ public class User {
     private String lastLogin;
 
     // Required for Firebase
-    public User() {}
+    public User(String emailOrContact, String password) {}
 
     public User(String id, String email, String password, String fullName, 
                 String phoneNumber, String userType) {
