@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdapter.ViewHolder> {
-    private List<BookingRequest> requests;
+    private final List<BookingRequest> requests;
 
     public BookingStatusAdapter(List<BookingRequest> requests) {
         this.requests = requests;
@@ -26,31 +26,24 @@ public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdap
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         BookingRequest request = requests.get(position);
+        
         holder.date.setText("Date: " + request.getDate());
         holder.timeSlot.setText("Time: " + request.getTimeSlot());
-        holder.details.setText("Details: " + request.getBookingDetails());
-        holder.duration.setText("Duration: " + request.getDuration() + " hour(s)");
-        holder.price.setText("Price: ₱" + request.getTotalPrice());
-        holder.paymentStatus.setText("Payment: " + request.getPaymentStatus());
+        holder.bookingDetails.setText("Details: " + request.getBookingDetails());
+        holder.status.setText("Status: " + request.getStatus());
         
-        // Set status with appropriate color
-        String status = request.getStatus();
-        holder.status.setText("Status: " + status);
-        
-        // Set color based on status
-        int colorRes;
-        switch (status.toLowerCase()) {
+        // Set status text color based on status
+        switch (request.getStatus().toLowerCase()) {
             case "accepted":
-                colorRes = android.R.color.holo_green_dark;
+                holder.status.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_green_dark));
                 break;
             case "denied":
-                colorRes = android.R.color.holo_red_dark;
+                holder.status.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_red_dark));
                 break;
             default:
-                colorRes = android.R.color.darker_gray;
+                holder.status.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.black));
                 break;
         }
-        holder.status.setTextColor(holder.itemView.getContext().getResources().getColor(colorRes));
     }
 
     @Override
@@ -59,23 +52,17 @@ public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdap
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView date;
-        public TextView timeSlot;
-        public TextView details;
-        public TextView status;
-        public TextView duration;
-        public TextView price;
-        public TextView paymentStatus;
+        public final TextView date;
+        public final TextView timeSlot;
+        public final TextView bookingDetails;
+        public final TextView status;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             date = itemView.findViewById(R.id.textDate);
             timeSlot = itemView.findViewById(R.id.textTimeSlot);
-            details = itemView.findViewById(R.id.textBookingDetails);
+            bookingDetails = itemView.findViewById(R.id.textBookingDetails);
             status = itemView.findViewById(R.id.textStatus);
-            duration = itemView.findViewById(R.id.textDuration);
-            price = itemView.findViewById(R.id.textPrice);
-            paymentStatus = itemView.findViewById(R.id.textPaymentStatus);
         }
     }
 } 
