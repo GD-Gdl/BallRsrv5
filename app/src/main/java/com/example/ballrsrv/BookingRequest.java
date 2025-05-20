@@ -3,6 +3,7 @@ package com.example.ballrsrv;
 public class BookingRequest {
     private String id;
     private String userName;
+    private String email;
     private String bookingDetails;
     private String status; // "pending", "accepted", "denied"
     private String date;
@@ -16,9 +17,10 @@ public class BookingRequest {
     public BookingRequest() {
     }
 
-    public BookingRequest(String id, String userName, String bookingDetails, String status, String date, String timeSlot) {
+    public BookingRequest(String id, String userName, String email, String bookingDetails, String status, String date, String timeSlot) {
         this.id = id;
         this.userName = userName;
+        this.email = email;
         this.bookingDetails = bookingDetails;
         this.status = status;
         this.date = date;
@@ -40,6 +42,14 @@ public class BookingRequest {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getBookingDetails() {

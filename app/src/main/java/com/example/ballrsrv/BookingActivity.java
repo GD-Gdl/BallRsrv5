@@ -17,7 +17,7 @@ import java.util.Locale;
 public class BookingActivity extends AppCompatActivity {
     private Button btnSelectTime, btnConfirmBooking, btnBack;
     private Button btnOneHour, btnTwoHours;
-    private TextView tvSelectedTime, tvDuration, tvTotalPrice;
+    private TextView tvSelectedTime, tvDuration, tvTotalPrice, tvCourtName;
     private Calendar startTime;
     private int duration = 0;
     private static final int MAX_DURATION = 2;
@@ -25,17 +25,26 @@ public class BookingActivity extends AppCompatActivity {
 
     private DatabaseReference pendingRequestsRef;
     private String userEmail;
+    private String courtName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking);
 
-        // Get user email from intent
+        // Get user email and court name from intent
         userEmail = getIntent().getStringExtra("email");
+        courtName = getIntent().getStringExtra("courtName");
+        
         if (userEmail == null) {
             Toast.makeText(this, "Please log in to make a booking", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        if (courtName == null) {
+            Toast.makeText(this, "Please select a court", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -58,6 +67,10 @@ public class BookingActivity extends AppCompatActivity {
         tvSelectedTime = findViewById(R.id.tvSelectedTime);
         tvDuration = findViewById(R.id.tvDuration);
         tvTotalPrice = findViewById(R.id.tvTotalPrice);
+        tvCourtName = findViewById(R.id.tvCourtName);
+
+        // Set court name
+        tvCourtName.setText("Booking for: " + courtName);
     }
 
     private void setupClickListeners() {
@@ -93,6 +106,9 @@ public class BookingActivity extends AppCompatActivity {
         tvSelectedTime.setText("Selected Time: " + timeFormat.format(startTime.getTime()));
         tvDuration.setText("Duration: " + duration + " hour(s)");
         tvTotalPrice.setText("Total Price: ₱" + (duration * PRICE_PER_HOUR));
+        
+        // Enable/disable confirm button based on duration
+        btnConfirmBooking.setEnabled(duration > 0);
     }
 
     private void confirmBooking() {
@@ -106,19 +122,24 @@ public class BookingActivity extends AppCompatActivity {
         BookingRequest request = new BookingRequest();
         request.setId(requestId);
         request.setEmail(userEmail);
+        request.setUserName(userEmail.split("@")[0]); // Use part before @ as username
         request.setDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
         request.setTimeSlot(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(startTime.getTime()));
         request.setDuration(duration);
         request.setTotalPrice(duration * PRICE_PER_HOUR);
         request.setStatus("pending");
-        request.setBookingDetails("Court booking for " + duration + " hour(s)");
+        request.setBookingDetails("Booking for " + courtName + " - " + duration + " hour(s)");
 
         // Save to database
         pendingRequestsRef.child(requestId).setValue(request)
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     Toast.makeText(this, "Booking request submitted successfully!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(this, PaymentMenu.class));
+                    Intent intent = new Intent(this, PaymentMenu.class);
+                    intent.putExtra("booking_id", requestId);
+                    intent.putExtra("total_price", duration * PRICE_PER_HOUR);
+                    intent.putExtra("court_name", courtName);
+                    startActivity(intent);
                     finish();
                 } else {
                     Toast.makeText(this, "Failed to submit booking request", Toast.LENGTH_SHORT).show();

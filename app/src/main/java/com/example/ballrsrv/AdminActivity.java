@@ -48,9 +48,13 @@ public class AdminActivity extends AppCompatActivity {
         });
 
         logoutButton.setOnClickListener(v -> {
+            // Clear login state using LoginActivity's logout method
+            LoginActivity.logout(this);
+            
             // Show logout message
             Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-            // Navigate back to login screen
+            
+            // Navigate to login screen and clear all previous activities
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);

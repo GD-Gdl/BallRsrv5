@@ -1,144 +1,177 @@
 package com.example.ballrsrv;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import java.util.UUID;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
     private static final String TAG = "SignUpActivity";
-    private Button btnCreate;
-    private EditText etEmail, etPassword, etConfirmPassword;
+    private static final String PREF_NAME = "LoginPrefs";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_IS_LOGGED_IN = "isLoggedIn";
+    private static final String KEY_IS_ADMIN = "isAdmin";
+    private static final String DATABASE_URL = "https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app/";
+
+    private EditText editTextEmail, editTextPassword, editTextConfirmPassword;
+    private Button btnSignUp;
     private DatabaseReference databaseRef;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        // Initialize Firebase Database
         try {
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            databaseRef = database.getReference("Users");
-            Log.d(TAG, "Firebase Database initialized successfully");
-        } catch (Exception e) {
-            Log.e(TAG, "Firebase initialization error: " + e.getMessage());
-            Toast.makeText(this, "Failed to initialize database. Please try again.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
+            // Initialize Firebase Database
+            databaseRef = FirebaseDatabase.getInstance(DATABASE_URL).getReference("users");
+            
+            // Initialize SharedPreferences
+            sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+            
+            // Initialize views
+            editTextEmail = findViewById(R.id.editTextEmail);
+            editTextPassword = findViewById(R.id.editTextPassword);
+            editTextConfirmPassword = findViewById(R.id.editTextConfirmPassword);
+            btnSignUp = findViewById(R.id.buttonSignUp);
 
-        // Initialize views
-        etEmail = findViewById(R.id.etEmailOrContact);
-        etPassword = findViewById(R.id.etPassword);
-        etConfirmPassword = findViewById(R.id.etConfirmPassword);
-        btnCreate = findViewById(R.id.btnCreate);
+            btnSignUp.setOnClickListener(v -> {
+                try {
+                    String email = editTextEmail.getText().toString().trim();
+                    String password = editTextPassword.getText().toString().trim();
+                    String confirmPassword = editTextConfirmPassword.getText().toString().trim();
 
-        // Set up click listener
-        btnCreate.setOnClickListener(v -> signUp());
-    }
-
-    private void signUp() {
-        // Get input values
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        String confirmPassword = etConfirmPassword.getText().toString().trim();
-
-        // Basic validation
-        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (!password.equals(confirmPassword)) {
-            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (password.length() < 6) {
-            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Disable button to prevent multiple clicks
-        btnCreate.setEnabled(false);
-        btnCreate.setText("Creating Account...");
-
-        // Check if email already exists
-        databaseRef.orderByChild("email").equalTo(email)
-            .addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                        Toast.makeText(SignUpActivity.this, 
-                            "Email already registered", Toast.LENGTH_SHORT).show();
-                        btnCreate.setEnabled(true);
-                        btnCreate.setText("Create Account");
-                    } else {
-                        createUser(email, password);
+                    if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
+                        Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                }
 
-                @Override
-                public void onCancelled(DatabaseError error) {
-                    Log.e(TAG, "Database error: " + error.getMessage());
-                    Toast.makeText(SignUpActivity.this, 
-                        "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    btnCreate.setEnabled(true);
-                    btnCreate.setText("Create Account");
+                    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (password.length() < 6) {
+                        Toast.makeText(this, "Password must be at least 6 characters long", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (!password.equals(confirmPassword)) {
+                        Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    createAccount(email, password);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error in signup click: " + e.getMessage());
+                    Toast.makeText(this, "An error occurred. Please try again.", Toast.LENGTH_SHORT).show();
                 }
             });
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onCreate: " + e.getMessage());
+            Toast.makeText(this, "An error occurred while initializing the app.", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private void createUser(String email, String password) {
+    private void createAccount(String email, String password) {
         try {
-            // Create new user
-            String userId = UUID.randomUUID().toString();
-            User user = new User(userId, email, password);
+            btnSignUp.setEnabled(false);
+            btnSignUp.setText("Creating Account...");
 
-            // Save to database
-            databaseRef.child(userId).setValue(user)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Log.d(TAG, "User created successfully");
-                        Toast.makeText(SignUpActivity.this, 
-                            "Account created successfully!", Toast.LENGTH_SHORT).show();
-                        
-                        // Go to home screen
-                        Intent intent = new Intent(SignUpActivity.this, HomeActivity.class);
-                        intent.putExtra("email", email);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Log.e(TAG, "Failed to create user: " + task.getException());
-                        Toast.makeText(SignUpActivity.this, 
-                            "Failed to create account. Please try again.", Toast.LENGTH_SHORT).show();
-                        btnCreate.setEnabled(true);
-                        btnCreate.setText("Create Account");
+            String userId = email.replace(".", "_");
+            Log.d(TAG, "Creating account for user ID: " + userId);
+
+            // Check if user already exists
+            databaseRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    try {
+                        if (snapshot.exists()) {
+                            Log.d(TAG, "User already exists");
+                            Toast.makeText(SignUpActivity.this, "Account already exists. Please login.", Toast.LENGTH_SHORT).show();
+                            btnSignUp.setEnabled(true);
+                            btnSignUp.setText("Sign Up");
+                            return;
+                        }
+
+                        // Create user profile
+                        Map<String, Object> userProfile = new HashMap<>();
+                        userProfile.put("email", email);
+                        userProfile.put("password", password);
+                        userProfile.put("isAdmin", false);
+
+                        // Save to database
+                        databaseRef.child(userId).setValue(userProfile)
+                            .addOnSuccessListener(aVoid -> {
+                                try {
+                                    Log.d(TAG, "Account created successfully");
+                                    
+                                    // Save login state
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putBoolean(KEY_IS_LOGGED_IN, true);
+                                    editor.putString(KEY_EMAIL, email);
+                                    editor.putBoolean(KEY_IS_ADMIN, false);
+                                    editor.apply();
+
+                                    Toast.makeText(SignUpActivity.this, "Account created successfully!", Toast.LENGTH_SHORT).show();
+                                    
+                                    // Navigate to home screen
+                                    Intent intent = new Intent(SignUpActivity.this, HomeActivity.class);
+                                    intent.putExtra("email", email);
+                                    startActivity(intent);
+                                    finish();
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error in account creation success: " + e.getMessage());
+                                    Toast.makeText(SignUpActivity.this, "An error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+                                    btnSignUp.setEnabled(true);
+                                    btnSignUp.setText("Sign Up");
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e(TAG, "Error creating account: " + e.getMessage());
+                                Toast.makeText(SignUpActivity.this, "Error creating account: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                btnSignUp.setEnabled(true);
+                                btnSignUp.setText("Sign Up");
+                            });
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error in account creation data change: " + e.getMessage());
+                        Toast.makeText(SignUpActivity.this, "An error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+                        btnSignUp.setEnabled(true);
+                        btnSignUp.setText("Sign Up");
                     }
-                });
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e(TAG, "Error checking existing account: " + error.getMessage());
+                    Toast.makeText(SignUpActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    btnSignUp.setEnabled(true);
+                    btnSignUp.setText("Sign Up");
+                }
+            });
         } catch (Exception e) {
-            Log.e(TAG, "Error creating user: " + e.getMessage());
-            Toast.makeText(this, "Error creating account. Please try again.", Toast.LENGTH_SHORT).show();
-            btnCreate.setEnabled(true);
-            btnCreate.setText("Create Account");
+            Log.e(TAG, "Error in createAccount: " + e.getMessage());
+            Toast.makeText(this, "An error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+            btnSignUp.setEnabled(true);
+            btnSignUp.setText("Sign Up");
         }
     }
 }

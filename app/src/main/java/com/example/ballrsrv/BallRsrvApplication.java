@@ -7,6 +7,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class BallRsrvApplication extends Application {
     private static final String TAG = "BallRsrvApplication";
+    private static final String DATABASE_URL = "https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
     @Override
     public void onCreate() {
@@ -14,17 +15,19 @@ public class BallRsrvApplication extends Application {
         
         try {
             // Initialize Firebase
-            FirebaseApp.initializeApp(this);
+            if (FirebaseApp.getApps(this).isEmpty()) {
+                FirebaseApp.initializeApp(this);
+            }
             
             // Enable offline persistence
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+            FirebaseDatabase.getInstance(DATABASE_URL).setPersistenceEnabled(true);
             
             // Set database URL explicitly
-            FirebaseDatabase.getInstance().getReference().keepSynced(true);
+            FirebaseDatabase.getInstance(DATABASE_URL).getReference().keepSynced(true);
             
             Log.d(TAG, "Firebase initialized successfully");
         } catch (Exception e) {
-            Log.e(TAG, "Failed to initialize Firebase: " + e.getMessage());
+            Log.e(TAG, "Failed to initialize Firebase: " + e.getMessage(), e);
         }
     }
 } 

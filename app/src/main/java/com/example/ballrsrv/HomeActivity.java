@@ -9,6 +9,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class HomeActivity extends AppCompatActivity {
+    private static final String PREF_NAME = "BallRsrvPrefs";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_IS_LOGGED_IN = "isLoggedIn";
+    
     private String userEmail;
     private DatabaseReference databaseRef;
 
@@ -37,9 +41,9 @@ public class HomeActivity extends AppCompatActivity {
         Button btnLogout = findViewById(R.id.btnLogout);
 
         // Set up click listeners
-        btn1Book.setOnClickListener(v -> startBooking("Court 1"));
-        btn2Book.setOnClickListener(v -> startBooking("Court 2"));
-        btn3Book.setOnClickListener(v -> startBooking("Court 3"));
+        btn1Book.setOnClickListener(v -> startBooking("YMCA Basketball Court"));
+        btn2Book.setOnClickListener(v -> startBooking("Irisan Basketball Court"));
+        btn3Book.setOnClickListener(v -> startBooking("St. Vincent Basketball Court"));
 
         btnViewStatus.setOnClickListener(v -> {
             Intent intent = new Intent(this, BookingStatusActivity.class);
@@ -49,7 +53,10 @@ public class HomeActivity extends AppCompatActivity {
 
         btnLogout.setOnClickListener(v -> {
             // Clear saved login state
-            LoginActivity.logout(this);
+            getSharedPreferences(PREF_NAME, MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply();
             
             // Show logout message
             Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
@@ -73,7 +80,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // Check if user is still logged in
-        if (userEmail == null) {
+        if (!getSharedPreferences(PREF_NAME, MODE_PRIVATE).getBoolean(KEY_IS_LOGGED_IN, false)) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         }

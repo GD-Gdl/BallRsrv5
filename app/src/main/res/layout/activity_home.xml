@@ -11,6 +11,16 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Logout Button -->
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#E6D8B9"
+            android:text="Logout"
+            android:textColor="@color/black" />
+
         <!-- View Status Button -->
         <Button
             android:id="@+id/btnViewStatus"
