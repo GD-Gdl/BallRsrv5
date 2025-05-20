@@ -36,8 +36,11 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         BookingRequest request = requests.get(position);
-        holder.userName.setText(request.getUserName());
-        holder.details.setText(request.getBookingDetails());
+        holder.userName.setText("Customer: " + request.getUserName());
+        holder.date.setText("Date: " + request.getDate());
+        holder.timeSlot.setText("Time: " + request.getTimeSlot());
+        holder.details.setText("Details: " + request.getBookingDetails());
+        
         holder.acceptButton.setOnClickListener(v -> listener.onAccept(request));
         holder.denyButton.setOnClickListener(v -> listener.onDeny(request));
     }
@@ -49,6 +52,8 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView userName;
+        public TextView date;
+        public TextView timeSlot;
         public TextView details;
         public Button acceptButton;
         public Button denyButton;
@@ -56,6 +61,8 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             userName = itemView.findViewById(R.id.textUserName);
+            date = itemView.findViewById(R.id.textDate);
+            timeSlot = itemView.findViewById(R.id.textTimeSlot);
             details = itemView.findViewById(R.id.textBookingDetails);
             acceptButton = itemView.findViewById(R.id.btnAccept);
             denyButton = itemView.findViewById(R.id.btnDeny);

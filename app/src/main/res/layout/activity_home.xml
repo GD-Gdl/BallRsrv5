@@ -11,6 +11,16 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- View Status Button -->
+        <Button
+            android:id="@+id/btnViewStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#E6D8B9"
+            android:text="View Booking Status"
+            android:textColor="@color/black" />
+
         <!-- Location 1 -->
         <LinearLayout
             android:layout_width="match_parent"

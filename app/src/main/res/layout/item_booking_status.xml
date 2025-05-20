@@ -14,14 +14,6 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/textUserName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
-
-        <TextView
             android:id="@+id/textDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -36,34 +28,40 @@
             android:layout_marginBottom="4dp"/>
 
         <TextView
+            android:id="@+id/textDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/textPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
             android:id="@+id/textBookingDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="16sp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="4dp"/>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/textPaymentStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
 
-            <Button
-                android:id="@+id/btnAccept"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Accept"
-                android:backgroundTint="@android:color/holo_green_dark"/>
+        <TextView
+            android:id="@+id/textStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
 
-            <Button
-                android:id="@+id/btnDeny"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:text="Deny"
-                android:backgroundTint="@android:color/holo_red_dark"/>
-        </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView> 
