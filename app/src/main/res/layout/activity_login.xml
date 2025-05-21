@@ -1,15 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#FAF9E6"
-    android:gravity="center">
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="363dp"
         android:layout_height="205dp"
+        android:contentDescription="App Logo"
         app:srcCompat="@drawable/screenshot_2025_05_08_005340" />
 
     <LinearLayout
@@ -21,7 +25,8 @@
         android:layout_gravity="center"
         android:elevation="4dp"
         android:layout_marginBottom="24dp"
-        android:radius="16dp">
+        android:clickable="true"
+        android:focusable="true">
 
         <TextView
             android:text="Log In"
@@ -40,7 +45,8 @@
             android:layout_marginBottom="8dp"
             android:background="@android:color/transparent"
             android:hint="Email or Contact Number"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:inputType="textEmailAddress" />
 
         <View
             android:layout_width="match_parent"
@@ -63,31 +69,43 @@
             android:layout_height="1dp"
             android:background="#AAA"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogin"
             android:text="Sign In"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="#FAF9E6"
             android:textColor="#333"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:minHeight="48dp"
+            app:rippleColor="#CCCCCC"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignUp"
             android:text="Sign Up"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="#FAF9E6"
             android:textColor="#333"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:minHeight="48dp"
+            app:rippleColor="#CCCCCC"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGuest"
+            android:text="Continue as guest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="#FAF9E6"
-            android:text="Continue as guest"
-            android:textColor="#050505" />
+            android:textColor="#050505"
+            android:clickable="true"
+            android:focusable="true"
+            android:minHeight="48dp"
+            app:rippleColor="#CCCCCC"/>
 
     </LinearLayout>
 </LinearLayout>
