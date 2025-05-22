@@ -65,24 +65,34 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Phone Number"
+                android:text="Password"
                 android:textStyle="bold"/>
 
             <TextView
-                android:id="@+id/phoneText"
+                android:id="@+id/passwordText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="+1234567890"
+                android:text="********"
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btnChangePassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Change Password"
+            android:textColor="@color/white"
+            android:backgroundTint="#E6D8B9"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="16dp"/>
 
         <Button
             android:id="@+id/logoutButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Logout"
-            android:backgroundTint="#E6D8B9"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
+            android:backgroundTint="#4CAF50"
             android:layout_marginTop="32dp"/>
 
     </LinearLayout>

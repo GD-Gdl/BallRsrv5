@@ -1,25 +1,23 @@
 package com.example.ballrsrv;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.database.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.Comparator;
 
 public class BookingStatusActivity extends AppCompatActivity {
     private static final String TAG = "BookingStatusActivity";
-    private RecyclerView recyclerViewBooked;
+    private RecyclerView recyclerView;
     private BookingStatusAdapter adapter;
-    private List<BookingRequest> bookedRequests;
-    private DatabaseReference databaseReference;
-    private ValueEventListener acceptedListener;
-    private ValueEventListener pendingListener;
+    private List<BookingRequest> bookings;
+    private DatabaseReference bookingsRef;
     private String userEmail;
 
     @Override
@@ -27,160 +25,85 @@ public class BookingStatusActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking_status);
 
-        try {
-            initializeViews();
-            initializeFirebase();
-            setupRecyclerView();
-            setupRequestsListeners();
-        } catch (Exception e) {
-            Log.e(TAG, "Error in onCreate: " + e.getMessage(), e);
-            Toast.makeText(this, "Error initializing booking status", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-    }
-
-    private void initializeViews() {
-        recyclerViewBooked = findViewById(R.id.recyclerViewBooked);
-        if (recyclerViewBooked == null) {
-            throw new IllegalStateException("RecyclerView not found in layout");
-        }
-
-        userEmail = getIntent().getStringExtra("userEmail");
+        // Get user email from intent
+        userEmail = getIntent().getStringExtra("email");
         if (userEmail == null || userEmail.isEmpty()) {
-            throw new IllegalStateException("User email not found in intent");
-        }
-    }
-
-    private void initializeFirebase() {
-        databaseReference = FirebaseDatabase.getInstance().getReference();
-        if (databaseReference == null) {
-            throw new IllegalStateException("Failed to initialize Firebase database reference");
-        }
-    }
-
-    private void setupRecyclerView() {
-        bookedRequests = new ArrayList<>();
-        adapter = new BookingStatusAdapter(bookedRequests);
-        recyclerViewBooked.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewBooked.setAdapter(adapter);
-    }
-
-    private void setupRequestsListeners() {
-        try {
-            String userKey = userEmail.replace(".", "_");
-            setupAcceptedRequestsListener(userKey);
-            setupPendingRequestsListener(userKey);
-        } catch (Exception e) {
-            Log.e(TAG, "Error setting up listeners: " + e.getMessage(), e);
-            Toast.makeText(this, "Error setting up booking status", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void setupAcceptedRequestsListener(String userKey) {
-        acceptedListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                try {
-                    processAcceptedRequests(snapshot);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error processing accepted requests: " + e.getMessage(), e);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Error loading accepted requests: " + error.getMessage());
-                Toast.makeText(BookingStatusActivity.this, 
-                    "Error loading accepted requests", Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        databaseReference.child("accepted_requests").child(userKey)
-            .addValueEventListener(acceptedListener);
-    }
-
-    private void setupPendingRequestsListener(String userKey) {
-        pendingListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                try {
-                    processPendingRequests(snapshot);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error processing pending requests: " + e.getMessage(), e);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Error loading pending requests: " + error.getMessage());
-                Toast.makeText(BookingStatusActivity.this, 
-                    "Error loading pending requests", Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        databaseReference.child("pending_requests").child(userKey)
-            .addValueEventListener(pendingListener);
-    }
-
-    private void processAcceptedRequests(DataSnapshot snapshot) {
-        if (!snapshot.exists()) {
-            Log.d(TAG, "No accepted requests found for user: " + userEmail);
+            Toast.makeText(this, "Error: User email not found", Toast.LENGTH_SHORT).show();
+            finish();
             return;
         }
 
-        // Clear only accepted requests
-        bookedRequests.removeIf(request -> "accepted".equalsIgnoreCase(request.getStatus()));
+        // Initialize Firebase
+        bookingsRef = FirebaseDatabase.getInstance().getReference("bookings");
         
-        for (DataSnapshot requestSnapshot : snapshot.getChildren()) {
-            BookingRequest request = requestSnapshot.getValue(BookingRequest.class);
-            if (request != null) {
-                request.setStatus("accepted");
-                bookedRequests.add(request);
-            }
-        }
-        adapter.notifyDataSetChanged();
+        // Initialize views
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        
+        // Initialize bookings list
+        bookings = new ArrayList<>();
+        adapter = new BookingStatusAdapter(bookings);
+        recyclerView.setAdapter(adapter);
+        
+        // Load bookings
+        loadBookings();
     }
 
-    private void processPendingRequests(DataSnapshot snapshot) {
-        if (!snapshot.exists()) {
-            Log.d(TAG, "No pending requests found for user: " + userEmail);
-            return;
-        }
+    private void loadBookings() {
+        // Convert email to valid Firebase key
+        String userKey = userEmail.replace(".", "_");
+        DatabaseReference userBookingsRef = bookingsRef.child(userKey);
 
-        // Clear only pending requests
-        bookedRequests.removeIf(request -> "pending".equalsIgnoreCase(request.getStatus()));
-        
-        for (DataSnapshot requestSnapshot : snapshot.getChildren()) {
-            BookingRequest request = requestSnapshot.getValue(BookingRequest.class);
-            if (request != null) {
-                request.setStatus("pending");
-                bookedRequests.add(request);
+        userBookingsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                bookings.clear();
+                
+                if (!snapshot.exists()) {
+                    Toast.makeText(BookingStatusActivity.this, 
+                        "No bookings found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                for (DataSnapshot bookingSnapshot : snapshot.getChildren()) {
+                    BookingRequest booking = bookingSnapshot.getValue(BookingRequest.class);
+                    if (booking != null) {
+                        booking.setId(bookingSnapshot.getKey());
+                        bookings.add(booking);
+                    }
+                }
+
+                // Sort bookings by date and time
+                Collections.sort(bookings, new Comparator<BookingRequest>() {
+                    @Override
+                    public int compare(BookingRequest b1, BookingRequest b2) {
+                        int dateCompare = b1.getDate().compareTo(b2.getDate());
+                        if (dateCompare == 0) {
+                            return b1.getTimeSlot().compareTo(b2.getTimeSlot());
+                        }
+                        return dateCompare;
+                    }
+                });
+
+                adapter.notifyDataSetChanged();
             }
-        }
-        adapter.notifyDataSetChanged();
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.e(TAG, "Error loading bookings: " + error.getMessage());
+                Toast.makeText(BookingStatusActivity.this, 
+                    "Error loading bookings", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        try {
-            removeListeners();
-        } catch (Exception e) {
-            Log.e(TAG, "Error in onDestroy: " + e.getMessage(), e);
-        }
-    }
-
-    private void removeListeners() {
-        if (databaseReference != null && userEmail != null) {
+        if (bookingsRef != null && userEmail != null) {
             String userKey = userEmail.replace(".", "_");
-            if (acceptedListener != null) {
-                databaseReference.child("accepted_requests").child(userKey)
-                    .removeEventListener(acceptedListener);
-            }
-            if (pendingListener != null) {
-                databaseReference.child("pending_requests").child(userKey)
-                    .removeEventListener(pendingListener);
-            }
+            DatabaseReference userBookingsRef = bookingsRef.child(userKey);
+            userBookingsRef.removeEventListener((ValueEventListener) adapter);
         }
     }
 } 

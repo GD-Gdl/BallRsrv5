@@ -19,9 +19,7 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
     private RecyclerView recyclerView;
     private BookingRequestAdapter adapter;
     private List<BookingRequest> requests;
-    private DatabaseReference acceptedRequestsRef;
-    private DatabaseReference pendingRequestsRef;
-    private DatabaseReference deniedRequestsRef;
+    private DatabaseReference databaseReference;
     private ValueEventListener requestsListener;
 
     @Override
@@ -29,10 +27,8 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_requests);
 
-        // Initialize Firebase Database references
-        pendingRequestsRef = FirebaseDatabase.getInstance().getReference("pending_requests");
-        acceptedRequestsRef = FirebaseDatabase.getInstance().getReference("accepted_requests");
-        deniedRequestsRef = FirebaseDatabase.getInstance().getReference("denied_requests");
+        // Initialize Firebase Database reference
+        databaseReference = FirebaseDatabase.getInstance().getReference();
 
         recyclerView = findViewById(R.id.recyclerView);
         requests = new ArrayList<>();
@@ -52,11 +48,13 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 requests.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    BookingRequest request = snapshot.getValue(BookingRequest.class);
-                    if (request != null) {
-                        request.setId(snapshot.getKey());
-                        requests.add(request);
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    for (DataSnapshot bookingSnapshot : userSnapshot.getChildren()) {
+                        BookingRequest request = bookingSnapshot.getValue(BookingRequest.class);
+                        if (request != null && "pending".equals(request.getStatus())) {
+                            request.setId(bookingSnapshot.getKey());
+                            requests.add(request);
+                        }
                     }
                 }
                 adapter.notifyDataSetChanged();
@@ -69,53 +67,37 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
                     Toast.LENGTH_SHORT).show();
             }
         };
-        pendingRequestsRef.addValueEventListener(requestsListener);
+        databaseReference.child("bookings").addValueEventListener(requestsListener);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (requestsListener != null) {
-            pendingRequestsRef.removeEventListener(requestsListener);
+            databaseReference.child("bookings").removeEventListener(requestsListener);
         }
     }
 
     @Override
     public void onAccept(BookingRequest request) {
-        // Remove from pending requests
-        pendingRequestsRef.child(request.getId()).removeValue()
+        String userKey = request.getEmail().replace(".", "_");
+        databaseReference.child("bookings").child(userKey).child(request.getId())
+            .child("status").setValue("accepted")
             .addOnSuccessListener(aVoid -> {
-                // Update status to accepted
-                request.setStatus("accepted");
-                // Add to accepted requests
-                acceptedRequestsRef.child(request.getId()).setValue(request)
-                    .addOnSuccessListener(aVoid2 -> {
-                        Toast.makeText(this, "Booking request accepted", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to save accepted booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+                Toast.makeText(this, "Booking request accepted", Toast.LENGTH_SHORT).show();
             })
             .addOnFailureListener(e -> {
-                Toast.makeText(this, "Failed to process booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Failed to accept booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             });
     }
 
     @Override
     public void onDeny(BookingRequest request) {
-        // Remove from pending requests
-        pendingRequestsRef.child(request.getId()).removeValue()
+        String userKey = request.getEmail().replace(".", "_");
+        databaseReference.child("bookings").child(userKey).child(request.getId())
+            .child("status").setValue("denied")
             .addOnSuccessListener(aVoid -> {
-                // Update status to denied
-                request.setStatus("denied");
-                // Add to denied requests
-                deniedRequestsRef.child(request.getId()).setValue(request)
-                    .addOnSuccessListener(aVoid2 -> {
-                        Toast.makeText(this, "Booking request denied", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to save denied booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+                Toast.makeText(this, "Booking request denied", Toast.LENGTH_SHORT).show();
             })
             .addOnFailureListener(e -> {
                 Toast.makeText(this, "Failed to deny booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();

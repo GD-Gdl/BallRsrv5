@@ -32,32 +32,37 @@ public class PaymentStatusActivityGcaash extends AppCompatActivity {
 
         btnConfirmBooking.setOnClickListener(v -> {
             if (bookingId != null) {
-                // Update booking status in Firebase
-                DatabaseReference bookingRef = bookingsRef.child(bookingId);
-                bookingRef.child("status").setValue("confirmed")
+                // Get user email from intent
+                String userEmail = getIntent().getStringExtra("email");
+                if (userEmail == null) {
+                    Toast.makeText(this, "Error: User email not found", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                // Update payment method in Firebase
+                String userKey = userEmail.replace(".", "_");
+                DatabaseReference bookingRef = FirebaseDatabase.getInstance()
+                    .getReference("bookings")
+                    .child(userKey)
+                    .child(bookingId);
+
+                bookingRef.child("paymentMethod").setValue("gcash")
                     .addOnSuccessListener(aVoid -> {
-                        bookingRef.child("paymentStatus").setValue("PENDING_GCASH")
-                            .addOnSuccessListener(aVoid2 -> {
-                                Toast.makeText(this, 
-                                    "Booking confirmed! Please complete your GCash payment.", 
-                                    Toast.LENGTH_LONG).show();
-                                btnConfirmBooking.setEnabled(false);
-                                
-                                // Navigate to home after successful confirmation
-                                Intent intent = new Intent(this, HomeActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                                finish();
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(this, 
-                                    "Failed to update payment status: " + e.getMessage(), 
-                                    Toast.LENGTH_LONG).show();
-                            });
+                        Toast.makeText(this, 
+                            "Booking confirmed! Please complete your GCash payment.", 
+                            Toast.LENGTH_LONG).show();
+                        btnConfirmBooking.setEnabled(false);
+                        
+                        // Navigate to home after successful confirmation
+                        Intent intent = new Intent(this, HomeActivity.class);
+                        intent.putExtra("email", userEmail);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish();
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(this, 
-                            "Failed to confirm booking: " + e.getMessage(), 
+                            "Failed to update payment method: " + e.getMessage(), 
                             Toast.LENGTH_LONG).show();
                     });
             } else {

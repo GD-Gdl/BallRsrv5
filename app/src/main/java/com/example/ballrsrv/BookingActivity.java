@@ -3,6 +3,7 @@ package com.example.ballrsrv;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,8 +16,9 @@ import java.util.Date;
 import java.util.Locale;
 
 public class BookingActivity extends AppCompatActivity {
-    private Button btnSelectTime, btnBack;
-    private Button btnOneHour, btnTwoHours, btnConfirmBooking;
+    private static final String TAG = "BookingActivity";
+    private Button btnSelectTime, btnConfirmBooking, btnBack;
+    private Button btnOneHour, btnTwoHours;
     private TextView tvSelectedTime, tvDuration, tvTotalPrice, tvCourtName;
     private Calendar startTime;
     private int duration = 0;
@@ -26,7 +28,6 @@ public class BookingActivity extends AppCompatActivity {
     private DatabaseReference pendingRequestsRef;
     private String userEmail;
     private String courtName;
-    private boolean isReturningFromPayment = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +39,8 @@ public class BookingActivity extends AppCompatActivity {
         courtName = getIntent().getStringExtra("courtName");
         
         if (userEmail == null) {
-            Toast.makeText(this, "Please log in to make a booking", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, LoginActivity.class));
+            Log.e(TAG, "User email not found in intent");
+            Toast.makeText(this, "Error: User email not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -50,29 +51,35 @@ public class BookingActivity extends AppCompatActivity {
             return;
         }
 
-        // Check if returning from payment menu
-        isReturningFromPayment = getIntent().getBooleanExtra("returning_from_payment", false);
-
         // Initialize Firebase
         pendingRequestsRef = FirebaseDatabase.getInstance().getReference("pending_requests");
+
+        // Initialize back button
+        btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                Log.d(TAG, "Back button clicked");
+                Intent intent = new Intent(BookingActivity.this, HomeActivity.class);
+                intent.putExtra("email", userEmail);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+            });
+        } else {
+            Log.e(TAG, "Back button not found in layout");
+        }
 
         initializeViews();
         setupClickListeners();
         startTime = Calendar.getInstance();
         updateUI();
-
-        // If returning from payment, show message
-        if (isReturningFromPayment) {
-            Toast.makeText(this, "Please select your booking details again", Toast.LENGTH_LONG).show();
-        }
     }
 
     private void initializeViews() {
         btnSelectTime = findViewById(R.id.btnSelectTime);
-        btnBack = findViewById(R.id.btnBack);
+        btnConfirmBooking = findViewById(R.id.btnConfirmBooking);
         btnOneHour = findViewById(R.id.btnOneHour);
         btnTwoHours = findViewById(R.id.btnTwoHours);
-        btnConfirmBooking = findViewById(R.id.btnConfirmBooking);
         tvSelectedTime = findViewById(R.id.tvSelectedTime);
         tvDuration = findViewById(R.id.tvDuration);
         tvTotalPrice = findViewById(R.id.tvTotalPrice);
@@ -80,17 +87,13 @@ public class BookingActivity extends AppCompatActivity {
 
         // Set court name
         tvCourtName.setText("Booking for: " + courtName);
-        
-        // Initially disable confirm button
-        btnConfirmBooking.setEnabled(false);
     }
 
     private void setupClickListeners() {
         btnSelectTime.setOnClickListener(v -> showTimePickerDialog());
-        btnBack.setOnClickListener(v -> finish());
+        btnConfirmBooking.setOnClickListener(v -> confirmBooking());
         btnOneHour.setOnClickListener(v -> setDuration(1));
         btnTwoHours.setOnClickListener(v -> setDuration(2));
-        btnConfirmBooking.setOnClickListener(v -> proceedToPayment());
     }
 
     private void showTimePickerDialog() {
@@ -100,7 +103,6 @@ public class BookingActivity extends AppCompatActivity {
                 startTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 startTime.set(Calendar.MINUTE, minute);
                 updateUI();
-                checkConfirmButtonState();
             },
             startTime.get(Calendar.HOUR_OF_DAY),
             startTime.get(Calendar.MINUTE),
@@ -112,14 +114,6 @@ public class BookingActivity extends AppCompatActivity {
     private void setDuration(int hours) {
         duration = hours;
         updateUI();
-        checkConfirmButtonState();
-    }
-
-    private void checkConfirmButtonState() {
-        // Enable confirm button only if both time and duration are selected
-        boolean timeSelected = !tvSelectedTime.getText().toString().contains("Not selected");
-        boolean durationSelected = duration > 0;
-        btnConfirmBooking.setEnabled(timeSelected && durationSelected);
     }
 
     private void updateUI() {
@@ -127,16 +121,22 @@ public class BookingActivity extends AppCompatActivity {
         tvSelectedTime.setText("Selected Time: " + timeFormat.format(startTime.getTime()));
         tvDuration.setText("Duration: " + duration + " hour(s)");
         tvTotalPrice.setText("Total Price: ₱" + (duration * PRICE_PER_HOUR));
+        
+        // Enable/disable confirm button based on duration
+        btnConfirmBooking.setEnabled(duration > 0);
     }
 
-    private void proceedToPayment() {
+    private void confirmBooking() {
         if (duration == 0) {
             Toast.makeText(this, "Please select duration", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Create booking request
-        String requestId = pendingRequestsRef.push().getKey();
+        String userKey = userEmail.replace(".", "_");
+        DatabaseReference userBookingsRef = FirebaseDatabase.getInstance().getReference("bookings").child(userKey);
+        String requestId = userBookingsRef.push().getKey();
+        
         BookingRequest request = new BookingRequest();
         request.setId(requestId);
         request.setEmail(userEmail);
@@ -148,10 +148,11 @@ public class BookingActivity extends AppCompatActivity {
         request.setStatus("pending");
         request.setBookingDetails("Booking for " + courtName + " - " + duration + " hour(s)");
 
-        // Save to database and proceed to payment
-        pendingRequestsRef.child(requestId).setValue(request)
+        // Save to database under user's bookings
+        userBookingsRef.child(requestId).setValue(request)
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
+                    Toast.makeText(this, "Booking request submitted successfully!", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(this, PaymentMenu.class);
                     intent.putExtra("booking_id", requestId);
                     intent.putExtra("total_price", duration * PRICE_PER_HOUR);
@@ -160,7 +161,7 @@ public class BookingActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(this, "Failed to create booking request", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to submit booking request", Toast.LENGTH_SHORT).show();
                 }
             });
     }

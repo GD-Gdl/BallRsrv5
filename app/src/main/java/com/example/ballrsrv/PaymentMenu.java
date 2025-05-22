@@ -34,6 +34,7 @@ public class PaymentMenu extends AppCompatActivity {
             intent.putExtra("mode", "GCASH");
             intent.putExtra("booking_id", bookingId);
             intent.putExtra("total_price", totalPrice);
+            intent.putExtra("email", userEmail);
             startActivity(intent);
         });
 
@@ -42,6 +43,7 @@ public class PaymentMenu extends AppCompatActivity {
             intent.putExtra("mode", "CASH");
             intent.putExtra("booking_id", bookingId);
             intent.putExtra("total_price", totalPrice);
+            intent.putExtra("email", userEmail);
             startActivity(intent);
         });
 
