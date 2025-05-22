@@ -16,7 +16,7 @@ public class BookingStatusActivity extends AppCompatActivity {
     private static final String TAG = "BookingStatusActivity";
     private RecyclerView recyclerView;
     private BookingStatusAdapter adapter;
-    private List<BookingRequest> bookings;
+    private List<Booking> bookings;
     private DatabaseReference bookingsRef;
     private String userEmail;
 
@@ -66,20 +66,27 @@ public class BookingStatusActivity extends AppCompatActivity {
                 }
 
                 for (DataSnapshot bookingSnapshot : snapshot.getChildren()) {
-                    BookingRequest booking = bookingSnapshot.getValue(BookingRequest.class);
-                    if (booking != null) {
-                        booking.setId(bookingSnapshot.getKey());
+                    BookingRequest bookingRequest = bookingSnapshot.getValue(BookingRequest.class);
+                    if (bookingRequest != null) {
+                        // Convert BookingRequest to Booking
+                        Booking booking = new Booking(
+                            bookingRequest.getBookingDetails().split(" - ")[0], // Court name
+                            bookingRequest.getDate(),
+                            bookingRequest.getTimeSlot(),
+                            bookingRequest.getStatus(),
+                            bookingRequest.getEmail()
+                        );
                         bookings.add(booking);
                     }
                 }
 
                 // Sort bookings by date and time
-                Collections.sort(bookings, new Comparator<BookingRequest>() {
+                Collections.sort(bookings, new Comparator<Booking>() {
                     @Override
-                    public int compare(BookingRequest b1, BookingRequest b2) {
+                    public int compare(Booking b1, Booking b2) {
                         int dateCompare = b1.getDate().compareTo(b2.getDate());
                         if (dateCompare == 0) {
-                            return b1.getTimeSlot().compareTo(b2.getTimeSlot());
+                            return b1.getTime().compareTo(b2.getTime());
                         }
                         return dateCompare;
                     }

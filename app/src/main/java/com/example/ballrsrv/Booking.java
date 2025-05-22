@@ -1,62 +1,61 @@
 package com.example.ballrsrv;
 
 public class Booking {
-    private String id;
-    private String userId;
-    private String userName;
+    private String courtName;
     private String date;
     private String time;
-    private int duration;
-    private double totalPrice;
     private String status;
-    private String paymentStatus;
-    private String paymentMethod;
+    private String userEmail;
 
-    // Required for Firebase
-    public Booking() {}
-
-    public Booking(String id, String userId, String userName, String date, String time, 
-                  int duration, double totalPrice, String status, String paymentStatus, String paymentMethod) {
-        this.id = id;
-        this.userId = userId;
-        this.userName = userName;
-        this.date = date;
-        this.time = time;
-        this.duration = duration;
-        this.totalPrice = totalPrice;
-        this.status = status;
-        this.paymentStatus = paymentStatus;
-        this.paymentMethod = paymentMethod;
+    // Empty constructor required for Firebase
+    public Booking() {
     }
 
-    // Getters and Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Booking(String courtName, String date, String time, String status, String userEmail) {
+        this.courtName = courtName;
+        this.date = date;
+        this.time = time;
+        this.status = status;
+        this.userEmail = userEmail;
+    }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public String getCourtName() {
+        return courtName;
+    }
 
-    public String getUserName() { return userName; }
-    public void setUserName(String userName) { this.userName = userName; }
+    public void setCourtName(String courtName) {
+        this.courtName = courtName;
+    }
 
-    public String getDate() { return date; }
-    public void setDate(String date) { this.date = date; }
+    public String getDate() {
+        return date;
+    }
 
-    public String getTime() { return time; }
-    public void setTime(String time) { this.time = time; }
+    public void setDate(String date) {
+        this.date = date;
+    }
 
-    public int getDuration() { return duration; }
-    public void setDuration(int duration) { this.duration = duration; }
+    public String getTime() {
+        return time;
+    }
 
-    public double getTotalPrice() { return totalPrice; }
-    public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }
+    public void setTime(String time) {
+        this.time = time;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getStatus() {
+        return status;
+    }
 
-    public String getPaymentStatus() { return paymentStatus; }
-    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-    public String getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
 }

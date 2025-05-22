@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdapter.ViewHolder> {
-    private List<BookingRequest> bookings;
+    private List<Booking> bookings;
 
-    public BookingStatusAdapter(List<BookingRequest> bookings) {
+    public BookingStatusAdapter(List<Booking> bookings) {
         this.bookings = bookings;
     }
 
@@ -20,29 +20,16 @@ public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdap
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-            .inflate(R.layout.item_booking_status, parent, false);
+                .inflate(R.layout.item_booking_status, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        BookingRequest booking = bookings.get(position);
-        
-        // Set booking details
-        holder.bookingDetails.setText(booking.getBookingDetails());
-        holder.date.setText("Date: " + booking.getDate());
-        holder.timeSlot.setText("Time: " + booking.getTimeSlot());
-        holder.duration.setText("Duration: " + booking.getDuration() + " hour(s)");
-        holder.totalPrice.setText("Total Price: ₱" + booking.getTotalPrice());
-        
-        // Set status with color
-        String status = "Status: " + booking.getStatus();
-        holder.status.setText(status);
-        holder.status.setTextColor(getStatusColor(booking.getStatus()));
-        
-        // Set payment method
-        String paymentInfo = "Payment Method: " + booking.getPaymentMethod();
-        holder.paymentStatus.setText(paymentInfo);
+        Booking booking = bookings.get(position);
+        holder.courtNameText.setText(booking.getCourtName());
+        holder.dateTimeText.setText(String.format("%s at %s", booking.getDate(), booking.getTime()));
+        holder.statusText.setText(booking.getStatus());
     }
 
     @Override
@@ -64,17 +51,20 @@ public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdap
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView bookingDetails, date, timeSlot, duration, totalPrice, status, paymentStatus;
+        public TextView courtNameText;
+        public TextView dateTimeText;
+        public TextView statusText;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolder(View itemView) {
             super(itemView);
-            bookingDetails = itemView.findViewById(R.id.tvBookingDetails);
-            date = itemView.findViewById(R.id.tvDate);
-            timeSlot = itemView.findViewById(R.id.tvTimeSlot);
-            duration = itemView.findViewById(R.id.tvDuration);
-            totalPrice = itemView.findViewById(R.id.tvTotalPrice);
-            status = itemView.findViewById(R.id.tvStatus);
-            paymentStatus = itemView.findViewById(R.id.tvPaymentStatus);
+            courtNameText = itemView.findViewById(R.id.courtNameText);
+            dateTimeText = itemView.findViewById(R.id.dateTimeText);
+            statusText = itemView.findViewById(R.id.statusText);
         }
+    }
+
+    public void updateBookings(List<Booking> newBookings) {
+        this.bookings = newBookings;
+        notifyDataSetChanged();
     }
 } 

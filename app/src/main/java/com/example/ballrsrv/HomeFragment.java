@@ -5,9 +5,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
+import com.google.android.material.button.MaterialButton;
 
 public class HomeFragment extends Fragment {
     private String userEmail;
@@ -23,10 +23,14 @@ public class HomeFragment extends Fragment {
             isGuest = getActivity().getIntent().getBooleanExtra("isGuest", false);
         }
 
-        // Initialize buttons
-        Button btn1Book = view.findViewById(R.id.btn1Book);
-        Button btn2Book = view.findViewById(R.id.btn2Book);
-        Button btn3Book = view.findViewById(R.id.btn3Book);
+        // Initialize buttons from each card's included layout
+        View card1 = view.findViewById(R.id.card1);
+        View card2 = view.findViewById(R.id.card2);
+        View card3 = view.findViewById(R.id.card3);
+
+        MaterialButton btn1Book = card1.findViewById(R.id.btnBook);
+        MaterialButton btn2Book = card2.findViewById(R.id.btnBook);
+        MaterialButton btn3Book = card3.findViewById(R.id.btnBook);
 
         // Set up click listeners
         btn1Book.setOnClickListener(v -> startBooking("YMCA Basketball Court"));
@@ -39,9 +43,7 @@ public class HomeFragment extends Fragment {
     private void startBooking(String courtName) {
         if (isGuest) {
             Toast.makeText(getContext(), "Please log in to make a booking", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(getContext(), LoginActivity.class);
-            startActivity(intent);
-            getActivity().finish();
+            LoginActivity.logout(getContext());
             return;
         }
 

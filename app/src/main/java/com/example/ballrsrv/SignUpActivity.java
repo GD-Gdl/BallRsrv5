@@ -124,18 +124,16 @@ public class SignUpActivity extends AppCompatActivity {
                                 try {
                                     Log.d(TAG, "Account created successfully");
                                     
-                                    // Save login state
+                                    // Clear any saved login state
                                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                                    editor.putBoolean(KEY_IS_LOGGED_IN, true);
-                                    editor.putString(KEY_EMAIL, email);
-                                    editor.putBoolean(KEY_IS_ADMIN, false);
+                                    editor.clear();
                                     editor.apply();
 
-                                    Toast.makeText(SignUpActivity.this, "Account created successfully!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(SignUpActivity.this, "Account created successfully! Please login.", Toast.LENGTH_SHORT).show();
                                     
-                                    // Navigate to home screen
-                                    Intent intent = new Intent(SignUpActivity.this, HomeActivity.class);
-                                    intent.putExtra("email", email);
+                                    // Navigate to login screen
+                                    Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     startActivity(intent);
                                     finish();
                                 } catch (Exception e) {

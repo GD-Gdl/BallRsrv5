@@ -77,11 +77,8 @@ public class ProfileFragment extends Fragment {
             // Sign out from Firebase Auth
             mAuth.signOut();
             
-            // Go directly to login activity
-            Intent intent = new Intent(getActivity(), LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            getActivity().finish();
+            // Use the centralized logout method
+            LoginActivity.logout(getActivity());
         });
 
         return view;
