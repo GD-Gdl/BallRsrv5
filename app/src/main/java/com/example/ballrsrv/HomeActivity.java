@@ -1,73 +1,53 @@
 package com.example.ballrsrv;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.Toast;
+import android.view.MenuItem;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
-public class HomeActivity extends AppCompatActivity {
-    private String userEmail;
-    private boolean isGuest;
+public class HomeActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // Get user email and guest status from intent
-        userEmail = getIntent().getStringExtra("email");
-        isGuest = getIntent().getBooleanExtra("isGuest", false);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(this);
 
-        // Initialize buttons
-        Button btn1Book = findViewById(R.id.btn1Book);
-        Button btn2Book = findViewById(R.id.btn2Book);
-        Button btn3Book = findViewById(R.id.btn3Book);
-        Button btnViewStatus = findViewById(R.id.btnViewStatus);
-        Button btnLogout = findViewById(R.id.btnLogout);
-
-        // Set up click listeners
-        btn1Book.setOnClickListener(v -> startBooking("YMCA Basketball Court"));
-        btn2Book.setOnClickListener(v -> startBooking("Irisan Basketball Court"));
-        btn3Book.setOnClickListener(v -> startBooking("St. Vincent Basketball Court"));
-
-        // Only show view status button if not a guest
-        if (!isGuest) {
-            btnViewStatus.setOnClickListener(v -> {
-                Intent intent = new Intent(this, BookingStatusActivity.class);
-                intent.putExtra("email", userEmail);
-                startActivity(intent);
-            });
-        } else {
-            btnViewStatus.setVisibility(Button.GONE);
+        // Set default fragment
+        if (savedInstanceState == null) {
+            loadFragment(new HomeFragment());
         }
-
-        // Set up logout button
-        btnLogout.setOnClickListener(v -> {
-            if (!isGuest) {
-                LoginActivity.logout(this);
-            } else {
-                // For guest users, just go back to login
-                Intent intent = new Intent(this, LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-            }
-        });
     }
 
-    private void startBooking(String courtName) {
-        if (isGuest) {
-            Toast.makeText(this, "Please log in to make a booking", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-            return;
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Fragment fragment = null;
+        
+        if (item.getItemId() == R.id.navigation_home) {
+            fragment = new HomeFragment();
+        } else if (item.getItemId() == R.id.navigation_booking_status) {
+            fragment = new BookingStatusFragment();
+        } else if (item.getItemId() == R.id.navigation_profile) {
+            fragment = new ProfileFragment();
         }
 
-        Intent intent = new Intent(this, BookingActivity.class);
-        intent.putExtra("email", userEmail);
-        intent.putExtra("courtName", courtName);
-        startActivity(intent);
+        if (fragment != null) {
+            loadFragment(fragment);
+            return true;
+        }
+        return false;
+    }
+
+    private void loadFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }
