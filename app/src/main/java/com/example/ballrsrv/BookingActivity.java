@@ -7,9 +7,10 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -25,9 +26,10 @@ public class BookingActivity extends AppCompatActivity {
     private static final int MAX_DURATION = 2;
     private static final int PRICE_PER_HOUR = 750;
 
-    private DatabaseReference pendingRequestsRef;
+    private DatabaseReference databaseReference;
     private String userEmail;
     private String courtName;
+    private SimpleDateFormat timeFormat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +54,8 @@ public class BookingActivity extends AppCompatActivity {
         }
 
         // Initialize Firebase
-        pendingRequestsRef = FirebaseDatabase.getInstance().getReference("pending_requests");
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
         // Initialize back button
         btnBack = findViewById(R.id.btnBack);
@@ -91,7 +94,7 @@ public class BookingActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         btnSelectTime.setOnClickListener(v -> showTimePickerDialog());
-        btnConfirmBooking.setOnClickListener(v -> confirmBooking());
+        btnConfirmBooking.setOnClickListener(v -> checkAndConfirmBooking());
         btnOneHour.setOnClickListener(v -> setDuration(1));
         btnTwoHours.setOnClickListener(v -> setDuration(2));
     }
@@ -117,7 +120,6 @@ public class BookingActivity extends AppCompatActivity {
     }
 
     private void updateUI() {
-        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
         tvSelectedTime.setText("Selected Time: " + timeFormat.format(startTime.getTime()));
         tvDuration.setText("Duration: " + duration + " hour(s)");
         tvTotalPrice.setText("Total Price: ₱" + (duration * PRICE_PER_HOUR));
@@ -126,15 +128,101 @@ public class BookingActivity extends AppCompatActivity {
         btnConfirmBooking.setEnabled(duration > 0);
     }
 
-    private void confirmBooking() {
+    private void checkAndConfirmBooking() {
         if (duration == 0) {
             Toast.makeText(this, "Please select duration", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Get the selected time slot
+        String selectedTime = timeFormat.format(startTime.getTime());
+        String selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
+        // Check for existing bookings across all users
+        databaseReference.child("bookings")
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    boolean isTimeSlotAvailable = true;
+                    String selectedTimeSlot = selectedTime;
+
+                    // Check all bookings for the selected court and time
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        for (DataSnapshot bookingSnapshot : userSnapshot.getChildren()) {
+                            BookingRequest booking = bookingSnapshot.getValue(BookingRequest.class);
+                            if (booking != null && 
+                                booking.getBookingDetails().contains(courtName) &&
+                                booking.getDate().equals(selectedDate) &&
+                                booking.getTimeSlot().equals(selectedTimeSlot) &&
+                                !booking.getStatus().equals("denied")) {
+                                
+                                isTimeSlotAvailable = false;
+                                break;
+                            }
+                        }
+                        if (!isTimeSlotAvailable) break;
+                    }
+
+                    if (isTimeSlotAvailable) {
+                        // Double check if the time slot is still available
+                        databaseReference.child("bookings")
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    boolean stillAvailable = true;
+                                    
+                                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                        for (DataSnapshot bookingSnapshot : userSnapshot.getChildren()) {
+                                            BookingRequest booking = bookingSnapshot.getValue(BookingRequest.class);
+                                            if (booking != null && 
+                                                booking.getBookingDetails().contains(courtName) &&
+                                                booking.getDate().equals(selectedDate) &&
+                                                booking.getTimeSlot().equals(selectedTimeSlot) &&
+                                                !booking.getStatus().equals("denied")) {
+                                                
+                                                stillAvailable = false;
+                                                break;
+                                            }
+                                        }
+                                        if (!stillAvailable) break;
+                                    }
+
+                                    if (stillAvailable) {
+                                        confirmBooking();
+                                    } else {
+                                        Toast.makeText(BookingActivity.this, 
+                                            "This time slot was just booked by another user. Please select another time.", 
+                                            Toast.LENGTH_LONG).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    Toast.makeText(BookingActivity.this, 
+                                        "Error checking availability: " + error.getMessage(), 
+                                        Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                    } else {
+                        Toast.makeText(BookingActivity.this, 
+                            "This time slot is already booked. Please select another time.", 
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(BookingActivity.this, 
+                        "Error checking availability: " + error.getMessage(), 
+                        Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
+
+    private void confirmBooking() {
         // Create booking request
         String userKey = userEmail.replace(".", "_");
-        DatabaseReference userBookingsRef = FirebaseDatabase.getInstance().getReference("bookings").child(userKey);
+        DatabaseReference userBookingsRef = databaseReference.child("bookings").child(userKey);
         String requestId = userBookingsRef.push().getKey();
         
         BookingRequest request = new BookingRequest();
@@ -142,7 +230,7 @@ public class BookingActivity extends AppCompatActivity {
         request.setEmail(userEmail);
         request.setUserName(userEmail.split("@")[0]); // Use part before @ as username
         request.setDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
-        request.setTimeSlot(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(startTime.getTime()));
+        request.setTimeSlot(timeFormat.format(startTime.getTime()));
         request.setDuration(duration);
         request.setTotalPrice(duration * PRICE_PER_HOUR);
         request.setStatus("pending");
