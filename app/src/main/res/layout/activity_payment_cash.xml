@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -52,12 +53,30 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnHome"
-        android:layout_width="118dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="#E6D8B9"
-        android:text="Home"
-        android:textColor="@color/black" />
+        android:orientation="vertical"
+        android:layout_marginTop="16dp"
+        android:paddingHorizontal="16dp">
+
+        <Button
+            android:id="@+id/btnConfirmBooking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#E6D8B9"
+            android:text="Confirm Booking"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#E6D8B9"
+            android:text="Back"
+            android:textColor="@color/black" />
+
+    </LinearLayout>
 
 </LinearLayout>

@@ -3,23 +3,68 @@ package com.example.ballrsrv;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class PaymentModeActivityCash extends AppCompatActivity {
+    private DatabaseReference bookingsRef;
+    private String bookingId;
+    private int totalPrice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_payment_cash); // Make sure your XML is named activity_payment_mode.xml
+        setContentView(R.layout.activity_payment_cash);
 
-        Button btnHome = findViewById(R.id.btnHome);
+        // Initialize Firebase
+        bookingsRef = FirebaseDatabase.getInstance().getReference("bookings");
+        
+        // Get booking details from intent
+        bookingId = getIntent().getStringExtra("booking_id");
+        totalPrice = getIntent().getIntExtra("total_price", 0);
 
-        btnHome.setOnClickListener(v -> {
-            Intent intent = new Intent(PaymentModeActivityCash.this, HomeActivity.class);
-            // Optional: clear the back stack so user can't return to payment screen
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
+        Button btnBack = findViewById(R.id.btnBack);
+        Button btnConfirmBooking = findViewById(R.id.btnConfirmBooking);
+
+        btnBack.setOnClickListener(v -> finish());
+
+        btnConfirmBooking.setOnClickListener(v -> {
+            if (bookingId != null) {
+                // Update booking status in Firebase
+                DatabaseReference bookingRef = bookingsRef.child(bookingId);
+                bookingRef.child("status").setValue("confirmed")
+                    .addOnSuccessListener(aVoid -> {
+                        bookingRef.child("paymentStatus").setValue("PENDING_CASH")
+                            .addOnSuccessListener(aVoid2 -> {
+                                Toast.makeText(this, 
+                                    "Booking confirmed! Please pay at the counter.", 
+                                    Toast.LENGTH_LONG).show();
+                                btnConfirmBooking.setEnabled(false);
+                                
+                                // Navigate to home after successful confirmation
+                                Intent intent = new Intent(this, HomeActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this, 
+                                    "Failed to update payment status: " + e.getMessage(), 
+                                    Toast.LENGTH_LONG).show();
+                            });
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, 
+                            "Failed to confirm booking: " + e.getMessage(), 
+                            Toast.LENGTH_LONG).show();
+                    });
+            } else {
+                Toast.makeText(this, 
+                    "Error: Booking information not found", 
+                    Toast.LENGTH_LONG).show();
+            }
         });
     }
 }
