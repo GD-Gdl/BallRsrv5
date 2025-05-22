@@ -1,7 +1,9 @@
 package com.example.ballrsrv;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
+import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,6 +42,9 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
 
         // Start listening for requests
         setupRequestsListener();
+
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
     }
 
     private void setupRequestsListener() {
