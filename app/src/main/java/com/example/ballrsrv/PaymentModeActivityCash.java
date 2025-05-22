@@ -7,8 +7,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.text.SimpleDateFormat;
 
 public class PaymentModeActivityCash extends AppCompatActivity {
+    private static final String DATABASE_URL = "https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app/";
     private DatabaseReference bookingsRef;
     private String bookingId;
     private int totalPrice;
@@ -19,7 +25,7 @@ public class PaymentModeActivityCash extends AppCompatActivity {
         setContentView(R.layout.activity_payment_cash);
 
         // Initialize Firebase
-        bookingsRef = FirebaseDatabase.getInstance().getReference("bookings");
+        bookingsRef = FirebaseDatabase.getInstance(DATABASE_URL).getReference("bookings");
         
         // Get booking details from intent
         bookingId = getIntent().getStringExtra("booking_id");
@@ -39,14 +45,17 @@ public class PaymentModeActivityCash extends AppCompatActivity {
                     return;
                 }
 
-                // Update payment method in Firebase
+                // Update booking in Firebase
                 String userKey = userEmail.replace(".", "_");
-                DatabaseReference bookingRef = FirebaseDatabase.getInstance()
-                    .getReference("bookings")
-                    .child(userKey)
-                    .child(bookingId);
+                DatabaseReference bookingRef = bookingsRef.child(userKey).child(bookingId);
 
-                bookingRef.child("paymentMethod").setValue("cash")
+                // Update booking data
+                Map<String, Object> updates = new HashMap<>();
+                updates.put("status", "pending");
+                updates.put("paymentMethod", "cash");
+                updates.put("totalPrice", totalPrice);
+
+                bookingRef.updateChildren(updates)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(this, 
                             "Booking confirmed! Please pay at the counter.", 
@@ -62,7 +71,7 @@ public class PaymentModeActivityCash extends AppCompatActivity {
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(this, 
-                            "Failed to update payment method: " + e.getMessage(), 
+                            "Failed to update booking: " + e.getMessage(), 
                             Toast.LENGTH_LONG).show();
                     });
             } else {

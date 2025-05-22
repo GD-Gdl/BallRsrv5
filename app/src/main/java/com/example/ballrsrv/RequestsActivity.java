@@ -18,6 +18,7 @@ import java.util.List;
 
 public class RequestsActivity extends AppCompatActivity implements BookingRequestAdapter.OnRequestActionListener {
     private static final String TAG = "RequestsActivity";
+    private static final String DATABASE_URL = "https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app/";
     private RecyclerView recyclerView;
     private BookingRequestAdapter adapter;
     private List<BookingRequest> requests;
@@ -31,7 +32,7 @@ public class RequestsActivity extends AppCompatActivity implements BookingReques
 
         try {
             // Initialize Firebase Database reference
-            databaseReference = FirebaseDatabase.getInstance().getReference();
+            databaseReference = FirebaseDatabase.getInstance(DATABASE_URL).getReference();
 
             recyclerView = findViewById(R.id.recyclerView);
             requests = new ArrayList<>();

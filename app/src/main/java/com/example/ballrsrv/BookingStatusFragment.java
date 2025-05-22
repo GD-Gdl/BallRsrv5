@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 public class BookingStatusFragment extends Fragment {
     private static final String TAG = "BookingStatusFragment";
+    private static final String DATABASE_URL = "https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app/";
     private DatabaseReference databaseReference;
     private RecyclerView recyclerView;
     private BookingStatusAdapter adapter;
@@ -41,7 +42,7 @@ public class BookingStatusFragment extends Fragment {
             }
 
             // Initialize Firebase
-            databaseReference = FirebaseDatabase.getInstance().getReference();
+            databaseReference = FirebaseDatabase.getInstance(DATABASE_URL).getReference();
             dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.getDefault());
 
             // Get user email from activity

@@ -17,6 +17,7 @@ import com.google.firebase.database.*;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class ProfileFragment extends Fragment {
+    private static final String DATABASE_URL = "https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app/";
     private DatabaseReference databaseReference;
     private FirebaseAuth mAuth;
 
@@ -25,7 +26,7 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         // Initialize Firebase
-        databaseReference = FirebaseDatabase.getInstance().getReference();
+        databaseReference = FirebaseDatabase.getInstance(DATABASE_URL).getReference();
         mAuth = FirebaseAuth.getInstance();
 
         // Get user email from activity

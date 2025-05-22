@@ -14,6 +14,7 @@ import java.util.Comparator;
 
 public class BookingStatusActivity extends AppCompatActivity {
     private static final String TAG = "BookingStatusActivity";
+    private static final String DATABASE_URL = "https://ballrsrv-a94eb-default-rtdb.asia-southeast1.firebasedatabase.app/";
     private RecyclerView recyclerView;
     private BookingStatusAdapter adapter;
     private List<Booking> bookings;
@@ -34,7 +35,7 @@ public class BookingStatusActivity extends AppCompatActivity {
         }
 
         // Initialize Firebase
-        bookingsRef = FirebaseDatabase.getInstance().getReference("bookings");
+        bookingsRef = FirebaseDatabase.getInstance(DATABASE_URL).getReference("bookings");
         
         // Initialize views
         recyclerView = findViewById(R.id.recyclerView);
