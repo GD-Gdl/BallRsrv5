@@ -22,10 +22,10 @@
     <ImageView
         android:id="@+id/imageView5"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="200dp"
         android:layout_marginTop="16dp"
-        android:scaleType="fitCenter"
-        app:srcCompat="@android:drawable/ic_menu_gallery"
+        android:scaleType="centerCrop"
+        android:background="#CCCCCC"
         app:layout_constraintTop_toBottomOf="@id/titleText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

@@ -31,7 +31,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="180dp"
                     android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery"
+                    android:src="@drawable/ymca_hostel_baguio06"
                     android:background="#CCCCCC" />
 
                 <LinearLayout
@@ -85,7 +85,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="180dp"
                     android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery"
+                    android:src="@drawable/irisan"
                     android:background="#CCCCCC" />
 
                 <LinearLayout
@@ -139,7 +139,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="180dp"
                     android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery"
+                    android:src="@drawable/vincent"
                     android:background="#CCCCCC" />
 
                 <LinearLayout

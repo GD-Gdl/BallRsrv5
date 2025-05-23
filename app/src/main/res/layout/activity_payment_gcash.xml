@@ -7,12 +7,6 @@
     android:background="#FAF9E6"
     android:gravity="center_horizontal">
 
-    <ImageView
-        android:layout_width="200dp"
-        android:layout_height="60dp"
-        android:src="@drawable/screenshot_2025_05_08_005340"
-        android:layout_marginTop="16dp"/>
-
     <TextView
         android:id="@+id/tvMode"
         android:layout_width="wrap_content"
@@ -58,10 +52,49 @@
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:layout_marginTop="16dp"
-        android:src="@android:drawable/ic_menu_gallery"
+        android:src="@drawable/gcashpayment"
         android:background="#E6D8B9"
         android:padding="16dp"
         android:contentDescription="GCash QR Code" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="216dp"
+        android:layout_marginTop="16dp"
+        android:background="#E6D8B9"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:paddingHorizontal="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp"
+            android:text="Can you please input your reference code. After pushing the confirm button please input your reference code again to confirm booking, Thank you!"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/etReferenceCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="#FFFFFF"
+            android:hint="Enter reference code"
+            android:inputType="text"
+            android:padding="12dp" />
+
+        <Button
+            android:id="@+id/btnConfirmReference"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#FAF9E6"
+            android:minHeight="48dp"
+            android:text="Confirm Reference"
+            android:textColor="#333" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
