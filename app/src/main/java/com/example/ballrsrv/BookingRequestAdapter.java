@@ -1,23 +1,34 @@
 package com.example.ballrsrv;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.google.firebase.database.*;
+
+import java.io.File;
 import java.util.List;
+
+import android.util.Base64;
 
 public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAdapter.ViewHolder> {
     private List<BookingRequest> requests;
     private OnRequestActionListener listener;
+    private DatabaseReference courtsRef;
 
     public BookingRequestAdapter(List<BookingRequest> requests, OnRequestActionListener listener) {
         this.requests = requests;
         this.listener = listener;
+        this.courtsRef = FirebaseDatabase.getInstance().getReference().child("courts");
     }
 
     public interface OnRequestActionListener {
@@ -41,8 +52,83 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
         holder.timeSlot.setText("Time: " + request.getTimeSlot());
         holder.details.setText("Details: " + request.getBookingDetails());
         
+        // Extract court name from booking details
+        String courtName = request.getBookingDetails().split(" - ")[0];
+        if (courtName.startsWith("Booking for ")) {
+            courtName = courtName.substring("Booking for ".length());
+        }
+
+        // Load court image
+        loadCourtImage(courtName, holder.courtImage);
+        
+        // Set payment method
+        String paymentMethod = request.getPaymentMethod();
+        if (paymentMethod != null && !paymentMethod.equals("none")) {
+            holder.paymentMethod.setVisibility(View.VISIBLE);
+            holder.paymentMethod.setText("Payment Method: " + paymentMethod.toUpperCase());
+        } else {
+            holder.paymentMethod.setVisibility(View.GONE);
+        }
+
+        // Show reference code for all requests (if available)
+        String referenceCode = request.getReferenceCode();
+        if (referenceCode != null && !referenceCode.isEmpty()) {
+            holder.referenceCode.setVisibility(View.VISIBLE);
+            if ("gcash".equals(paymentMethod)) {
+                holder.referenceCode.setText("GCash Reference: " + referenceCode);
+            } else {
+                holder.referenceCode.setText("Reference Code: " + referenceCode);
+            }
+        } else {
+            holder.referenceCode.setVisibility(View.GONE);
+        }
+        
         holder.acceptButton.setOnClickListener(v -> listener.onAccept(request));
         holder.denyButton.setOnClickListener(v -> listener.onDeny(request));
+    }
+
+    private void loadCourtImage(String courtName, ImageView imageView) {
+        courtsRef.orderByChild("name").equalTo(courtName)
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        for (DataSnapshot courtSnapshot : snapshot.getChildren()) {
+                            Court court = courtSnapshot.getValue(Court.class);
+                            if (court != null && court.getImageUrl() != null) {
+                                try {
+                                    byte[] decodedString = Base64.decode(court.getImageUrl(), Base64.DEFAULT);
+                                    Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                    imageView.setImageBitmap(decodedBitmap);
+                                } catch (Exception e) {
+                                    imageView.setImageResource(getDefaultImageResource(courtName));
+                                }
+                                break;
+                            }
+                        }
+                    } else {
+                        imageView.setImageResource(getDefaultImageResource(courtName));
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    imageView.setImageResource(getDefaultImageResource(courtName));
+                }
+            });
+    }
+
+    private int getDefaultImageResource(String courtName) {
+        switch (courtName) {
+            case "YMCA Basketball Court":
+                return R.drawable.ymca_hostel_baguio06;
+            case "Irisan Basketball Court":
+                return R.drawable.irisan;
+            case "St. Vincent Basketball Court":
+                return R.drawable.vincent;
+            default:
+                return android.R.drawable.ic_menu_gallery;
+        }
     }
 
     @Override
@@ -55,8 +141,11 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
         public TextView date;
         public TextView timeSlot;
         public TextView details;
+        public TextView paymentMethod;
+        public TextView referenceCode;
         public Button acceptButton;
         public Button denyButton;
+        public ImageView courtImage;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -64,8 +153,11 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
             date = itemView.findViewById(R.id.textDate);
             timeSlot = itemView.findViewById(R.id.textTimeSlot);
             details = itemView.findViewById(R.id.textBookingDetails);
+            paymentMethod = itemView.findViewById(R.id.textPaymentMethod);
+            referenceCode = itemView.findViewById(R.id.textReferenceCode);
             acceptButton = itemView.findViewById(R.id.btnAccept);
             denyButton = itemView.findViewById(R.id.btnDeny);
+            courtImage = itemView.findViewById(R.id.courtImage);
         }
     }
 }

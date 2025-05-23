@@ -12,11 +12,13 @@ public class BookingRequest {
     private double totalPrice;
     private String paymentStatus; // "pending", "paid", "failed"
     private String paymentMethod; // "cash", "gcash", "none"
+    private String referenceCode;
 
     // Required empty constructor for Firebase
     public BookingRequest() {
         this.paymentStatus = "pending";
         this.paymentMethod = "none";
+        this.referenceCode = "";
     }
 
     public BookingRequest(String id, String userName, String email, String bookingDetails, String status, String date, String timeSlot) {
@@ -29,6 +31,7 @@ public class BookingRequest {
         this.timeSlot = timeSlot;
         this.paymentStatus = "pending";
         this.paymentMethod = "none";
+        this.referenceCode = "";
     }
 
     public String getId() {
@@ -117,5 +120,13 @@ public class BookingRequest {
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getReferenceCode() {
+        return referenceCode;
+    }
+
+    public void setReferenceCode(String referenceCode) {
+        this.referenceCode = referenceCode;
     }
 }

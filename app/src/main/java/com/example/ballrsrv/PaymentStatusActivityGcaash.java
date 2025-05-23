@@ -22,9 +22,8 @@ public class PaymentStatusActivityGcaash extends AppCompatActivity {
     private DatabaseReference bookingsRef;
     private String bookingId;
     private int totalPrice;
-    private Button btnConfirmReference;
+    private Button btnConfirmBooking;
     private EditText etReferenceCode;
-    private String savedReferenceCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,13 +38,12 @@ public class PaymentStatusActivityGcaash extends AppCompatActivity {
         totalPrice = getIntent().getIntExtra("total_price", 0);
 
         Button btnBack = findViewById(R.id.btnBack);
-        Button btnConfirmBooking = findViewById(R.id.btnConfirmBooking);
-        btnConfirmReference = findViewById(R.id.btnConfirmReference);
+        btnConfirmBooking = findViewById(R.id.btnConfirmBooking);
         etReferenceCode = findViewById(R.id.etReferenceCode);
 
         btnBack.setOnClickListener(v -> finish());
 
-        btnConfirmReference.setOnClickListener(v -> {
+        btnConfirmBooking.setOnClickListener(v -> {
             String referenceCode = etReferenceCode.getText().toString().trim();
             if (referenceCode.isEmpty()) {
                 Toast.makeText(this, "Please enter a reference code", Toast.LENGTH_SHORT).show();
@@ -59,83 +57,39 @@ public class PaymentStatusActivityGcaash extends AppCompatActivity {
                 return;
             }
 
-            // Save reference code to user's booking in Firebase
+            // Update booking in Firebase
             String userKey = userEmail.replace(".", "_");
             DatabaseReference bookingRef = bookingsRef.child(userKey).child(bookingId);
 
-            bookingRef.child("referenceCode").setValue(referenceCode)
+            // Update booking data
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("status", "pending");
+            updates.put("paymentMethod", "gcash");
+            updates.put("totalPrice", totalPrice);
+            updates.put("referenceCode", referenceCode);
+
+            bookingRef.updateChildren(updates)
                     .addOnSuccessListener(aVoid -> {
-                        savedReferenceCode = referenceCode; // Store the saved reference code
-                        Toast.makeText(this, "Reference code saved successfully", Toast.LENGTH_SHORT).show();
-                        etReferenceCode.setText("");
-                        btnConfirmBooking.setEnabled(true);
+                        Toast.makeText(this,
+                                "Booking confirmed! Please complete your GCash payment.",
+                                Toast.LENGTH_LONG).show();
+                        btnConfirmBooking.setEnabled(false);
+
+                        // Navigate to home after successful confirmation
+                        Intent intent = new Intent(this, HomeActivity.class);
+                        intent.putExtra("email", userEmail);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish();
                     })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to save reference code: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this,
+                                "Failed to update booking: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     });
         });
 
-        btnConfirmBooking.setOnClickListener(v -> {
-            if (bookingId != null) {
-                // Get user email from intent
-                String userEmail = getIntent().getStringExtra("email");
-                if (userEmail == null) {
-                    Toast.makeText(this, "Error: User email not found", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                // Check if reference code is provided
-                String referenceCode = etReferenceCode.getText().toString().trim();
-                if (referenceCode.isEmpty()) {
-                    Toast.makeText(this, "Please enter and confirm your reference code first", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                // Check if the reference code matches the saved one
-                if (!referenceCode.equals(savedReferenceCode)) {
-                    Toast.makeText(this, "Reference code does not match. Please enter the same reference code.", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                // Update booking in Firebase
-                String userKey = userEmail.replace(".", "_");
-                DatabaseReference bookingRef = bookingsRef.child(userKey).child(bookingId);
-
-                // Update booking data
-                Map<String, Object> updates = new HashMap<>();
-                updates.put("status", "pending");
-                updates.put("paymentMethod", "gcash");
-                updates.put("totalPrice", totalPrice);
-                updates.put("referenceCode", referenceCode);
-
-                bookingRef.updateChildren(updates)
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(this,
-                                    "Booking confirmed! Please complete your GCash payment.",
-                                    Toast.LENGTH_LONG).show();
-                            btnConfirmBooking.setEnabled(false);
-
-                            // Navigate to home after successful confirmation
-                            Intent intent = new Intent(this, HomeActivity.class);
-                            intent.putExtra("email", userEmail);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
-                            finish();
-                        })
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(this,
-                                    "Failed to update booking: " + e.getMessage(),
-                                    Toast.LENGTH_LONG).show();
-                        });
-            } else {
-                Toast.makeText(this,
-                        "Error: Booking information not found",
-                        Toast.LENGTH_LONG).show();
-            }
-        });
-
-        // Initially disable the confirm booking button until reference code is confirmed
-        btnConfirmBooking.setEnabled(false);
+        // Initially disable the confirm booking button until reference code is entered
+        btnConfirmBooking.setEnabled(true);
     }
 }

@@ -2,7 +2,10 @@ package com.example.ballrsrv;
 
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -11,11 +14,13 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.database.*;
+import com.bumptech.glide.Glide;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.io.File;
 
 public class BookingActivity extends AppCompatActivity {
     private static final String TAG = "BookingActivity";
@@ -93,19 +98,52 @@ public class BookingActivity extends AppCompatActivity {
         // Set court name
         tvCourtName.setText("Booking for: " + courtName);
 
-        // Set court image based on court name
+        // Load court image from database
         if (courtName != null) {
-            switch (courtName) {
-                case "YMCA Basketball Court":
-                    courtImage.setImageResource(R.drawable.ymca_hostel_baguio06);
-                    break;
-                case "Irisan Basketball Court":
-                    courtImage.setImageResource(R.drawable.irisan);
-                    break;
-                case "St. Vincent Basketball Court":
-                    courtImage.setImageResource(R.drawable.vincent);
-                    break;
-            }
+            DatabaseReference courtsRef = databaseReference.child("courts");
+            courtsRef.orderByChild("name").equalTo(courtName)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            for (DataSnapshot courtSnapshot : snapshot.getChildren()) {
+                                Court court = courtSnapshot.getValue(Court.class);
+                                if (court != null && court.getImageUrl() != null) {
+                                    try {
+                                        byte[] decodedString = Base64.decode(court.getImageUrl(), Base64.DEFAULT);
+                                        Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                        courtImage.setImageBitmap(decodedBitmap);
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "Error decoding image: " + e.getMessage());
+                                        courtImage.setImageResource(getDefaultImageResource());
+                                    }
+                                    break;
+                                }
+                            }
+                        } else {
+                            courtImage.setImageResource(getDefaultImageResource());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "Error loading court image: " + error.getMessage());
+                        courtImage.setImageResource(getDefaultImageResource());
+                    }
+                });
+        }
+    }
+
+    private int getDefaultImageResource() {
+        switch (courtName) {
+            case "YMCA Basketball Court":
+                return R.drawable.ymca_hostel_baguio06;
+            case "Irisan Basketball Court":
+                return R.drawable.irisan;
+            case "St. Vincent Basketball Court":
+                return R.drawable.vincent;
+            default:
+                return android.R.drawable.ic_menu_gallery;
         }
     }
 

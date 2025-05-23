@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginBottom="8dp"
-            android:text="Can you please input your reference code. After pushing the confirm button please input your reference code again to confirm booking, Thank you!"
+            android:text="Please input your reference code to confirm booking, Thank you!"
             android:textColor="@color/black"
             android:textSize="16sp" />
 
@@ -84,16 +84,6 @@
             android:hint="Enter reference code"
             android:inputType="text"
             android:padding="12dp" />
-
-        <Button
-            android:id="@+id/btnConfirmReference"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="#FAF9E6"
-            android:minHeight="48dp"
-            android:text="Confirm Reference"
-            android:textColor="#333" />
     </LinearLayout>
 
     <LinearLayout

@@ -3,11 +3,15 @@ package com.example.ballrsrv;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -52,6 +56,24 @@ public class SignUpActivity extends AppCompatActivity {
             editTextPassword = findViewById(R.id.editTextPassword);
             editTextConfirmPassword = findViewById(R.id.editTextConfirmPassword);
             btnSignUp = findViewById(R.id.buttonSignUp);
+
+            // Set up login text with colored span
+            TextView textViewLogin = findViewById(R.id.textViewLogin);
+            String fullText = "Already have an account? Log in";
+            SpannableString spannableString = new SpannableString(fullText);
+            int startIndex = fullText.indexOf("Log in");
+            spannableString.setSpan(
+                new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)),
+                startIndex,
+                startIndex + "Log in".length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+            textViewLogin.setText(spannableString);
+            textViewLogin.setOnClickListener(v -> {
+                Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish(); // Close the signup activity
+            });
 
             btnSignUp.setOnClickListener(v -> {
                 try {
