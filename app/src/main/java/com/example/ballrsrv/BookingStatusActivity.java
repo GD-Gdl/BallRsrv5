@@ -35,7 +35,7 @@ public class BookingStatusActivity extends AppCompatActivity {
         }
 
         // Initialize Firebase
-        bookingsRef = FirebaseDatabase.getInstance(DATABASE_URL).getReference("bookings");
+        bookingsRef = FirebaseDatabase.getInstance(DATABASE_URL).getReference();
         
         // Initialize views
         recyclerView = findViewById(R.id.recyclerView);
@@ -53,7 +53,7 @@ public class BookingStatusActivity extends AppCompatActivity {
     private void loadBookings() {
         // Convert email to valid Firebase key
         String userKey = userEmail.replace(".", "_");
-        DatabaseReference userBookingsRef = bookingsRef.child(userKey);
+        DatabaseReference userBookingsRef = bookingsRef.child("bookings").child(userKey);
 
         userBookingsRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -70,12 +70,21 @@ public class BookingStatusActivity extends AppCompatActivity {
                     BookingRequest bookingRequest = bookingSnapshot.getValue(BookingRequest.class);
                     if (bookingRequest != null) {
                         // Convert BookingRequest to Booking
+                        String courtName = bookingRequest.getBookingDetails().split(" - ")[0];
+                        if (courtName.startsWith("Booking for ")) {
+                            courtName = courtName.substring("Booking for ".length());
+                        }
+                        
                         Booking booking = new Booking(
-                            bookingRequest.getBookingDetails().split(" - ")[0], // Court name
+                            courtName,
                             bookingRequest.getDate(),
                             bookingRequest.getTimeSlot(),
                             bookingRequest.getStatus(),
-                            bookingRequest.getEmail()
+                            bookingRequest.getEmail(),
+                            bookingRequest.getDuration(),
+                            bookingRequest.getTotalPrice(),
+                            bookingRequest.getPaymentStatus(),
+                            bookingRequest.getPaymentMethod()
                         );
                         bookings.add(booking);
                     }
@@ -110,7 +119,7 @@ public class BookingStatusActivity extends AppCompatActivity {
         super.onDestroy();
         if (bookingsRef != null && userEmail != null) {
             String userKey = userEmail.replace(".", "_");
-            DatabaseReference userBookingsRef = bookingsRef.child(userKey);
+            DatabaseReference userBookingsRef = bookingsRef.child("bookings").child(userKey);
             userBookingsRef.removeEventListener((ValueEventListener) adapter);
         }
     }

@@ -86,12 +86,20 @@ public class BookingStatusFragment extends Fragment {
 
                                             // Convert BookingRequest to Booking
                                             String courtName = bookingRequest.getBookingDetails().split(" - ")[0];
+                                            if (courtName.startsWith("Booking for ")) {
+                                                courtName = courtName.substring("Booking for ".length());
+                                            }
+                                            
                                             Booking booking = new Booking(
-                                                courtName.replace("Booking for ", ""), // Remove "Booking for " prefix
+                                                courtName,
                                                 bookingRequest.getDate(),
                                                 bookingRequest.getTimeSlot(),
                                                 bookingRequest.getStatus(),
-                                                bookingRequest.getEmail()
+                                                bookingRequest.getEmail(),
+                                                bookingRequest.getDuration(),
+                                                bookingRequest.getTotalPrice(),
+                                                "none", // paymentStatus
+                                                bookingRequest.getPaymentMethod()
                                             );
                                             bookingList.add(booking);
                                         }
@@ -102,16 +110,14 @@ public class BookingStatusFragment extends Fragment {
                                 adapter.notifyDataSetChanged();
                             } catch (Exception e) {
                                 Log.e(TAG, "Error in onDataChange: " + e.getMessage());
-                                Toast.makeText(getContext(), "Error loading bookings: " + e.getMessage(), 
-                                    Toast.LENGTH_SHORT).show();
+                                showNoBookingsMessage();
                             }
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
                             Log.e(TAG, "Database error: " + error.getMessage());
-                            Toast.makeText(getContext(), "Error loading bookings: " + error.getMessage(), 
-                                Toast.LENGTH_SHORT).show();
+                            showNoBookingsMessage();
                         }
                     });
             } else {
@@ -119,8 +125,7 @@ public class BookingStatusFragment extends Fragment {
             }
         } catch (Exception e) {
             Log.e(TAG, "Error in onCreateView: " + e.getMessage());
-            Toast.makeText(getContext(), "Error initializing bookings: " + e.getMessage(), 
-                Toast.LENGTH_SHORT).show();
+            showNoBookingsMessage();
         }
 
         return view;

@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
+import java.util.Locale;
 
 public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdapter.ViewHolder> {
     private List<Booking> bookings;
@@ -28,8 +29,14 @@ public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdap
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Booking booking = bookings.get(position);
         holder.courtNameText.setText(booking.getCourtName());
-        holder.dateTimeText.setText(String.format("%s at %s", booking.getDate(), booking.getTime()));
-        holder.statusText.setText(booking.getStatus());
+        holder.dateTimeText.setText(String.format("Date: %s at %s", booking.getDate(), booking.getTime()));
+        holder.durationText.setText(String.format("Duration: %d hour(s)", booking.getDuration()));
+        holder.priceText.setText(String.format(Locale.getDefault(), "Total Price: ₱%.2f", booking.getTotalPrice()));
+        holder.paymentMethodText.setText(String.format("Payment Method: %s", booking.getPaymentMethod()));
+        holder.statusText.setText(String.format("Booking Status: %s", booking.getStatus()));
+        
+        // Set status color
+        holder.statusText.setTextColor(getStatusColor(booking.getStatus()));
     }
 
     @Override
@@ -53,12 +60,18 @@ public class BookingStatusAdapter extends RecyclerView.Adapter<BookingStatusAdap
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView courtNameText;
         public TextView dateTimeText;
+        public TextView durationText;
+        public TextView priceText;
+        public TextView paymentMethodText;
         public TextView statusText;
 
         public ViewHolder(View itemView) {
             super(itemView);
             courtNameText = itemView.findViewById(R.id.courtNameText);
             dateTimeText = itemView.findViewById(R.id.dateTimeText);
+            durationText = itemView.findViewById(R.id.durationText);
+            priceText = itemView.findViewById(R.id.priceText);
+            paymentMethodText = itemView.findViewById(R.id.paymentMethodText);
             statusText = itemView.findViewById(R.id.statusText);
         }
     }
