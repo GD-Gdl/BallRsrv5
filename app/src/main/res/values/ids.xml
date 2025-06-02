@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="courtImage" type="id"/>
+    <item name="courtName" type="id"/>
+    <item name="courtDescription" type="id"/>
+    <item name="courtPrice" type="id"/>
+    <item name="btnBook" type="id"/>
+    <item name="btnRemove" type="id"/>
+</resources> 
