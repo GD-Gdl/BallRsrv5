@@ -84,11 +84,8 @@ public class RequestsFragment extends Fragment implements BookingRequestAdapter.
 
     @Override
     public void onAccept(BookingRequest request) {
-        // Update request status in Firebase under the user's bookings
-        String userKey = request.getEmail().replace(".", "_");
         String requestId = request.getId();
         if (requestId != null) {
-            databaseReference.child("bookings").child(userKey).child(requestId)
                 .child("status").setValue("accepted")
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "Request accepted", Toast.LENGTH_SHORT).show();
@@ -102,11 +99,8 @@ public class RequestsFragment extends Fragment implements BookingRequestAdapter.
 
     @Override
     public void onDeny(BookingRequest request) {
-        // Update request status in Firebase under the user's bookings
-        String userKey = request.getEmail().replace(".", "_");
         String requestId = request.getId();
         if (requestId != null) {
-            databaseReference.child("bookings").child(userKey).child(requestId)
                 .child("status").setValue("denied")
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "Request denied", Toast.LENGTH_SHORT).show();
