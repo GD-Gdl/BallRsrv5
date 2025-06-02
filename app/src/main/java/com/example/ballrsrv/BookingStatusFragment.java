@@ -43,7 +43,7 @@ public class BookingStatusFragment extends Fragment {
 
             // Initialize Firebase
             databaseReference = FirebaseDatabase.getInstance(DATABASE_URL).getReference();
-            dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.getDefault());
+            dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
             // Get user email from activity
             String userEmail = getActivity() != null ? 
@@ -59,6 +59,7 @@ public class BookingStatusFragment extends Fragment {
             if (userEmail != null && !userEmail.equals("Guest User") && !isGuest) {
                 // Convert email to valid Firebase key
                 String userKey = userEmail.replace(".", "_");
+                Log.d(TAG, "Loading bookings for user: " + userKey);
                 
                 // Fetch user's bookings directly from their node
                 databaseReference.child("bookings").child(userKey)
@@ -69,14 +70,20 @@ public class BookingStatusFragment extends Fragment {
                                 bookingList.clear();
                                 
                                 if (!snapshot.exists() || !snapshot.hasChildren()) {
+                                    Log.d(TAG, "No bookings found for user");
                                     showNoBookingsMessage();
                                     return;
                                 }
+
+                                Log.d(TAG, "Found " + snapshot.getChildrenCount() + " bookings");
 
                                 for (DataSnapshot bookingSnapshot : snapshot.getChildren()) {
                                     try {
                                         BookingRequest bookingRequest = bookingSnapshot.getValue(BookingRequest.class);
                                         if (bookingRequest != null) {
+                                            Log.d(TAG, "Processing booking: " + bookingSnapshot.getKey() + 
+                                                  " Status: " + bookingRequest.getStatus());
+
                                             // Check if booking is older than 24 hours
                                             if (isBookingOlderThan24Hours(bookingRequest)) {
                                                 // Delete the old booking
@@ -98,16 +105,20 @@ public class BookingStatusFragment extends Fragment {
                                                 bookingRequest.getEmail(),
                                                 bookingRequest.getDuration(),
                                                 bookingRequest.getTotalPrice(),
-                                                "none", // paymentStatus
+                                                bookingRequest.getPaymentStatus(),
                                                 bookingRequest.getPaymentMethod()
                                             );
                                             bookingList.add(booking);
+                                            Log.d(TAG, "Added booking: " + courtName + " for " + 
+                                                  booking.getDate() + " at " + booking.getTime());
                                         }
                                     } catch (Exception e) {
                                         Log.e(TAG, "Error processing booking: " + e.getMessage());
                                     }
                                 }
-                                adapter.notifyDataSetChanged();
+
+                                Log.d(TAG, "Total bookings added to list: " + bookingList.size());
+                                adapter.updateBookings(bookingList);
                             } catch (Exception e) {
                                 Log.e(TAG, "Error in onDataChange: " + e.getMessage());
                                 showNoBookingsMessage();
@@ -121,6 +132,7 @@ public class BookingStatusFragment extends Fragment {
                         }
                     });
             } else {
+                Log.d(TAG, "User is guest or email is null");
                 showNoBookingsMessage();
             }
         } catch (Exception e) {
@@ -174,6 +186,7 @@ public class BookingStatusFragment extends Fragment {
     private void showNoBookingsMessage() {
         if (getContext() != null) {
             Toast.makeText(getContext(), "No bookings found", Toast.LENGTH_SHORT).show();
+            adapter.updateBookings(new ArrayList<>()); // Update adapter with empty list
         }
     }
 } 

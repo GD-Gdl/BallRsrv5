@@ -108,9 +108,9 @@ public class BookingActivity extends AppCompatActivity {
                         if (snapshot.exists()) {
                             for (DataSnapshot courtSnapshot : snapshot.getChildren()) {
                                 Court court = courtSnapshot.getValue(Court.class);
-                                if (court != null && court.getImageUrl() != null) {
+                                if (court != null && court.getImageBase64() != null) {
                                     try {
-                                        byte[] decodedString = Base64.decode(court.getImageUrl(), Base64.DEFAULT);
+                                        byte[] decodedString = Base64.decode(court.getImageBase64(), Base64.DEFAULT);
                                         Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                                         courtImage.setImageBitmap(decodedBitmap);
                                     } catch (Exception e) {

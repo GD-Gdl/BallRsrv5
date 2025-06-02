@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +41,13 @@ public class CourtsFragment extends Fragment {
     private List<Court> courtsList;
     private DatabaseReference courtsRef;
     private Uri selectedImageUri;
+    private Bitmap selectedImageBitmap;
     private ImageView courtImagePreview;
     private AlertDialog currentDialog;
     private AlertDialog progressDialog;
     private static final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/jpg", "image/png"};
+    private static final int MAX_IMAGE_SIZE_MB = 5;
+    private static final int MAX_IMAGE_DIMENSION = 1024; // Maximum width or height for the image
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
         new ActivityResultContracts.StartActivityForResult(),
@@ -73,12 +78,17 @@ public class CourtsFragment extends Fragment {
                                 return;
                             }
 
+                            // Resize the image if it's too large
+                            selectedImageBitmap = resizeImageIfNeeded(selectedImageBitmap);
                             imagePreview.setImageBitmap(selectedImageBitmap);
                             showAddCourtDialog();
                         } catch (Exception e) {
+                            Log.e("CourtsFragment", "Error processing image: " + e.getMessage());
+                            Toast.makeText(getContext(), "Error processing image", Toast.LENGTH_SHORT).show();
                             resetUploadState();
                         }
                     }
+                }
             } else {
                 Toast.makeText(getContext(), "Image selection cancelled or failed", Toast.LENGTH_SHORT).show();
             }
@@ -93,20 +103,15 @@ public class CourtsFragment extends Fragment {
         FloatingActionButton fabAddCourt = view.findViewById(R.id.fabAddCourt);
 
         courtsList = new ArrayList<>();
-        adapter = new CourtsAdapter(courtsList, new CourtsAdapter.OnCourtActionListener() {
-            @Override
-            public void onRemoveCourt(Court court) {
-                removeCourt(court);
-            }
-        });
+        adapter = new CourtsAdapter(courtsList, court -> removeCourt(court));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
 
-        // Initialize Firebase references
         courtsRef = FirebaseDatabase.getInstance().getReference("courts");
-
-
+        
+        fabAddCourt.setOnClickListener(v -> showImageUploadDialog());
+        
         loadCourts();
 
         return view;
@@ -160,9 +165,10 @@ public class CourtsFragment extends Fragment {
             courtImagePreview.setImageBitmap(selectedImageBitmap);
         }
 
+        currentDialog = builder.create();
 
         btnCancel.setOnClickListener(v -> {
-            addCourtDialog.dismiss();
+            currentDialog.dismiss();
             resetUploadState();
         });
 
@@ -185,51 +191,89 @@ public class CourtsFragment extends Fragment {
                 return;
             }
 
-            progressDialog = new AlertDialog.Builder(requireContext())
-                .setCancelable(false)
-                .create();
-            progressDialog.show();
-
             try {
-
                 double price = Double.parseDouble(priceStr);
+                String courtId = courtsRef.push().getKey();
+                if (courtId == null) {
+                    Toast.makeText(getContext(), "Failed to generate court ID", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            } catch (Exception e) {
-                progressDialog.dismiss();
-                resetUploadState();
+                // Convert bitmap to base64
+                String base64Image = convertBitmapToBase64(selectedImageBitmap);
+
+                Court court = new Court(courtId, name, location, price, base64Image, true);
+
+                progressDialog = new AlertDialog.Builder(requireContext())
+                    .setMessage("Adding court...")
+                    .setCancelable(false)
+                    .create();
+                progressDialog.show();
+
+                courtsRef.child(courtId).setValue(court)
+                    .addOnSuccessListener(aVoid -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "Court added successfully", Toast.LENGTH_SHORT).show();
+                        currentDialog.dismiss();
+                        resetUploadState();
+                    })
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "Failed to add court: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        resetUploadState();
+                    });
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Invalid price format", Toast.LENGTH_SHORT).show();
             }
         });
 
+        currentDialog.show();
     }
 
-        String courtId = courtsRef.push().getKey();
+    private String convertBitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
+        byte[] imageBytes = outputStream.toByteArray();
+        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
+    }
 
-        courtsRef.child(courtId).setValue(court)
-            .addOnSuccessListener(aVoid -> {
-                progressDialog.dismiss();
-                Toast.makeText(getContext(), "Court added successfully", Toast.LENGTH_SHORT).show();
-                resetUploadState();
-            })
-            .addOnFailureListener(e -> {
-                progressDialog.dismiss();
-                resetUploadState();
-            });
+    private Bitmap resizeImageIfNeeded(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        if (width <= MAX_IMAGE_DIMENSION && height <= MAX_IMAGE_DIMENSION) {
+            return bitmap;
+        }
+
+        float scale;
+        if (width > height) {
+            scale = (float) MAX_IMAGE_DIMENSION / width;
+        } else {
+            scale = (float) MAX_IMAGE_DIMENSION / height;
+        }
+
+        int newWidth = Math.round(width * scale);
+        int newHeight = Math.round(height * scale);
+
+        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
     }
 
     private void removeCourt(Court court) {
         if (court.getId() != null) {
-
             courtsRef.child(court.getId()).removeValue()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "Court removed successfully", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
                     Log.e("CourtsFragment", "Failed to remove court: " + e.getMessage());
+                    Toast.makeText(getContext(), "Failed to remove court", Toast.LENGTH_SHORT).show();
                 });
         }
+    }
 
     private void resetUploadState() {
         selectedImageUri = null;
+        selectedImageBitmap = null;
         if (currentDialog != null) {
             currentDialog.dismiss();
             currentDialog = null;
@@ -238,18 +282,6 @@ public class CourtsFragment extends Fragment {
             progressDialog.dismiss();
             progressDialog = null;
         }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        resetUploadState();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        resetUploadState();
     }
 
     private boolean validateImage(Uri imageUri) {
@@ -262,7 +294,7 @@ public class CourtsFragment extends Fragment {
                 return false;
             }
 
-            String mimeType = getContext().getContentResolver().getType(imageUri);
+            String mimeType = requireContext().getContentResolver().getType(imageUri);
             if (mimeType == null || !isAllowedImageType(mimeType)) {
                 Toast.makeText(getContext(), 
                     "Please select a JPG or PNG image", 
@@ -280,7 +312,7 @@ public class CourtsFragment extends Fragment {
 
     private long getFileSize(Uri uri) {
         try {
-            return getContext().getContentResolver().openFileDescriptor(uri, "r").getStatSize();
+            return requireContext().getContentResolver().openFileDescriptor(uri, "r").getStatSize();
         } catch (Exception e) {
             Log.e("CourtsFragment", "Error getting file size: " + e.getMessage());
             return 0;
@@ -312,8 +344,20 @@ public class CourtsFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Failed to load courts", Toast.LENGTH_SHORT).show();
+                Log.e("CourtsFragment", "Failed to load courts: " + error.getMessage());
             }
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        resetUploadState();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        resetUploadState();
     }
 } 

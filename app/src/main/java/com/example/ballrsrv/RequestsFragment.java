@@ -60,6 +60,8 @@ public class RequestsFragment extends Fragment implements BookingRequestAdapter.
                             if (request != null) {
                                 // Only add requests that are pending
                                 if ("pending".equals(request.getStatus())) {
+                                    request.setId(bookingSnapshot.getKey());
+                                    request.setUserId(userSnapshot.getKey()); // Store the user key
                                     bookingRequests.add(request);
                                 }
                             }
@@ -84,31 +86,17 @@ public class RequestsFragment extends Fragment implements BookingRequestAdapter.
 
     @Override
     public void onAccept(BookingRequest request) {
-        String requestId = request.getId();
-        if (requestId != null) {
-                .child("status").setValue("accepted")
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Request accepted", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error accepting request: " + e.getMessage(), 
-                        Toast.LENGTH_SHORT).show();
-                });
+        // No need to update the database here since the adapter already does it
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Request accepted", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onDeny(BookingRequest request) {
-        String requestId = request.getId();
-        if (requestId != null) {
-                .child("status").setValue("denied")
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Request denied", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error denying request: " + e.getMessage(), 
-                        Toast.LENGTH_SHORT).show();
-                });
+        // No need to update the database here since the adapter already does it
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Request denied", Toast.LENGTH_SHORT).show();
         }
     }
 } 

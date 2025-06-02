@@ -20,7 +20,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment implements CustomerCourtsAdapter.OnBookCourtListener {
+public class HomeFragment extends Fragment implements CustomerCourtsAdapter.OnCourtClickListener {
     private String userEmail;
     private boolean isGuest;
     private RecyclerView courtsRecyclerView;
@@ -80,7 +80,7 @@ public class HomeFragment extends Fragment implements CustomerCourtsAdapter.OnBo
     }
 
     @Override
-    public void onBookCourt(Court court) {
+    public void onCourtClick(Court court) {
         startBooking(court.getName()); // Assuming startBooking uses court name
         // If startBooking needs more court details, you will need to modify it
     }

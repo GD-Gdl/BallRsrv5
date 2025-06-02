@@ -5,18 +5,20 @@ public class Court {
     private String name;
     private String location;
     private double price;
-    private String imageUrl;
+    private String imageBase64;
+    private boolean available;
 
     public Court() {
-        // Required empty constructor for Firebase
+        // Default constructor required for Firebase
     }
 
-    public Court(String id, String name, String location, double price, String imageUrl) {
+    public Court(String id, String name, String location, double price, String imageBase64, boolean available) {
         this.id = id;
         this.name = name;
         this.location = location;
         this.price = price;
-        this.imageUrl = imageUrl;
+        this.imageBase64 = imageBase64;
+        this.available = available;
     }
 
     public String getId() {
@@ -51,11 +53,19 @@ public class Court {
         this.price = price;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getImageBase64() {
+        return imageBase64;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 } 

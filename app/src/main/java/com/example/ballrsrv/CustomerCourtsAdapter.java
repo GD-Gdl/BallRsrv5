@@ -1,6 +1,8 @@
 package com.example.ballrsrv;
 
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,19 +12,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
-import java.util.Locale;
 
 public class CustomerCourtsAdapter extends RecyclerView.Adapter<CustomerCourtsAdapter.CourtViewHolder> {
+    private List<Court> courts;
+    private OnCourtClickListener listener;
 
-    private List<Court> courtsList;
-    private OnBookCourtListener listener;
-
-    public interface OnBookCourtListener {
-        void onBookCourt(Court court);
+    public interface OnCourtClickListener {
+        void onCourtClick(Court court);
     }
 
-    public CustomerCourtsAdapter(List<Court> courtsList, OnBookCourtListener listener) {
-        this.courtsList = courtsList;
+    public CustomerCourtsAdapter(List<Court> courts, OnCourtClickListener listener) {
+        this.courts = courts;
         this.listener = listener;
     }
 
@@ -35,45 +35,62 @@ public class CustomerCourtsAdapter extends RecyclerView.Adapter<CustomerCourtsAd
 
     @Override
     public void onBindViewHolder(@NonNull CourtViewHolder holder, int position) {
-        Court court = courtsList.get(position);
-        holder.courtName.setText(court.getName());
-        holder.courtLocation.setText(court.getLocation());
-        holder.courtPrice.setText(String.format(Locale.getDefault(), "₱%.2f per hour", court.getPrice()));
-
-        if (court.getImageUrl() != null && !court.getImageUrl().isEmpty()) {
-        } else {
-        }
-
-        holder.btnBook.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onBookCourt(court);
-            }
-        });
-
-        // Hide the remove button for the customer view
-        holder.btnRemove.setVisibility(View.GONE);
+        Court court = courts.get(position);
+        holder.bind(court);
     }
 
     @Override
     public int getItemCount() {
-        return courtsList.size();
+        return courts.size();
     }
 
-    public static class CourtViewHolder extends RecyclerView.ViewHolder {
-        ImageView courtImage;
-        TextView courtName;
-        TextView courtLocation;
-        TextView courtPrice;
-        Button btnBook;
+    class CourtViewHolder extends RecyclerView.ViewHolder {
+        private ImageView courtImage;
+        private TextView courtName;
+        private TextView courtDescription;
+        private TextView courtPrice;
+        private Button btnBook;
+        private Button btnRemove;
 
-        public CourtViewHolder(@NonNull View itemView) {
+        CourtViewHolder(@NonNull View itemView) {
             super(itemView);
             courtImage = itemView.findViewById(R.id.courtImage);
-            courtName = itemView.findViewById(R.id.courtNameText);
-            courtLocation = itemView.findViewById(R.id.courtLocationText);
-            courtPrice = itemView.findViewById(R.id.courtPriceText);
+            courtName = itemView.findViewById(R.id.courtName);
+            courtDescription = itemView.findViewById(R.id.courtDescription);
+            courtPrice = itemView.findViewById(R.id.courtPrice);
             btnBook = itemView.findViewById(R.id.btnBook);
             btnRemove = itemView.findViewById(R.id.btnRemove);
+
+            btnRemove.setVisibility(View.GONE);
+            btnBook.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onCourtClick(courts.get(position));
+                }
+            });
+        }
+
+        void bind(Court court) {
+            courtName.setText(court.getName());
+            courtDescription.setText(court.getLocation());
+            courtPrice.setText(String.format("$%.2f per hour", court.getPrice()));
+
+            // Load base64 image
+            if (court.getImageBase64() != null && !court.getImageBase64().isEmpty()) {
+                try {
+                    byte[] decodedString = Base64.decode(court.getImageBase64(), Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    courtImage.setImageBitmap(bitmap);
+                } catch (Exception e) {
+                    // If there's an error loading the image, set a default image or placeholder
+                    courtImage.setImageResource(R.drawable.ic_court_placeholder);
+                }
+            } else {
+                // Set default image if no image is available
+                courtImage.setImageResource(R.drawable.ic_court_placeholder);
+            }
+
+            btnBook.setVisibility(court.isAvailable() ? View.VISIBLE : View.GONE);
         }
     }
 } 

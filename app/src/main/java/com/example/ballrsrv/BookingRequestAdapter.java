@@ -24,11 +24,14 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
     private List<BookingRequest> requests;
     private OnRequestActionListener listener;
     private DatabaseReference courtsRef;
+    private DatabaseReference bookingsRef;
 
     public BookingRequestAdapter(List<BookingRequest> requests, OnRequestActionListener listener) {
         this.requests = requests;
         this.listener = listener;
-        this.courtsRef = FirebaseDatabase.getInstance().getReference().child("courts");
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        this.courtsRef = database.getReference().child("courts");
+        this.bookingsRef = database.getReference().child("bookings");
     }
 
     public interface OnRequestActionListener {
@@ -82,9 +85,49 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
         } else {
             holder.referenceCode.setVisibility(View.GONE);
         }
+
+        // Show/hide buttons based on status
+        String status = request.getStatus();
+        if ("pending".equals(status)) {
+            holder.acceptButton.setVisibility(View.VISIBLE);
+            holder.denyButton.setVisibility(View.VISIBLE);
+            holder.statusText.setVisibility(View.GONE);
+        } else {
+            holder.acceptButton.setVisibility(View.GONE);
+            holder.denyButton.setVisibility(View.GONE);
+            holder.statusText.setVisibility(View.VISIBLE);
+            holder.statusText.setText("Status: " + status.toUpperCase());
+        }
         
-        holder.acceptButton.setOnClickListener(v -> listener.onAccept(request));
-        holder.denyButton.setOnClickListener(v -> listener.onDeny(request));
+        holder.acceptButton.setOnClickListener(v -> {
+            // Update the request status in Firebase
+            String userKey = request.getEmail().replace(".", "_");
+            DatabaseReference requestRef = bookingsRef.child(userKey).child(request.getId());
+            
+            requestRef.child("status").setValue("accepted")
+                .addOnSuccessListener(aVoid -> {
+                    request.setStatus("accepted");
+                    notifyItemChanged(holder.getAdapterPosition());
+                    if (listener != null) {
+                        listener.onAccept(request);
+                    }
+                });
+        });
+
+        holder.denyButton.setOnClickListener(v -> {
+            // Update the request status in Firebase
+            String userKey = request.getEmail().replace(".", "_");
+            DatabaseReference requestRef = bookingsRef.child(userKey).child(request.getId());
+            
+            requestRef.child("status").setValue("denied")
+                .addOnSuccessListener(aVoid -> {
+                    request.setStatus("denied");
+                    notifyItemChanged(holder.getAdapterPosition());
+                    if (listener != null) {
+                        listener.onDeny(request);
+                    }
+                });
+        });
     }
 
     private void loadCourtImage(String courtName, ImageView imageView) {
@@ -95,9 +138,9 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
                     if (snapshot.exists()) {
                         for (DataSnapshot courtSnapshot : snapshot.getChildren()) {
                             Court court = courtSnapshot.getValue(Court.class);
-                            if (court != null && court.getImageUrl() != null) {
+                            if (court != null && court.getImageBase64() != null) {
                                 try {
-                                    byte[] decodedString = Base64.decode(court.getImageUrl(), Base64.DEFAULT);
+                                    byte[] decodedString = Base64.decode(court.getImageBase64(), Base64.DEFAULT);
                                     Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                                     imageView.setImageBitmap(decodedBitmap);
                                 } catch (Exception e) {
@@ -143,6 +186,7 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
         public TextView details;
         public TextView paymentMethod;
         public TextView referenceCode;
+        public TextView statusText;
         public Button acceptButton;
         public Button denyButton;
         public ImageView courtImage;
@@ -155,6 +199,7 @@ public class BookingRequestAdapter extends RecyclerView.Adapter<BookingRequestAd
             details = itemView.findViewById(R.id.textBookingDetails);
             paymentMethod = itemView.findViewById(R.id.textPaymentMethod);
             referenceCode = itemView.findViewById(R.id.textReferenceCode);
+            statusText = itemView.findViewById(R.id.textStatus);
             acceptButton = itemView.findViewById(R.id.btnAccept);
             denyButton = itemView.findViewById(R.id.btnDeny);
             courtImage = itemView.findViewById(R.id.courtImage);

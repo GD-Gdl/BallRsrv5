@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -11,65 +11,57 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/courtImage"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:scaleType="centerCrop"
-            android:background="#E6D8B9"/>
+            android:contentDescription="Court Image"/>
+
+        <TextView
+            android:id="@+id/courtName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/courtDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/courtPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textStyle="bold"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/courtNameText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"/>
-
-            <TextView
-                android:id="@+id/courtLocationText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp"/>
-
-            <TextView
-                android:id="@+id/courtPriceText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textColor="#4CAF50"/>
-
-            <Button
-                android:id="@+id/btnRemove"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Remove"
-                android:layout_gravity="end"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="#FF5252"
-                android:textColor="#FFFFFF"/>
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnBook"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Book"
-                android:layout_gravity="end"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@color/design_default_color_primary"
-                android:textColor="#FFFFFF"/>
+                android:layout_weight="1"
+                android:text="Book"/>
 
+            <Button
+                android:id="@+id/btnRemove"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Remove"/>
         </LinearLayout>
-
     </LinearLayout>
-
-</com.google.android.material.card.MaterialCardView> 
+</androidx.cardview.widget.CardView> 
