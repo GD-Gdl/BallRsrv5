@@ -30,7 +30,7 @@ public class BookingActivity extends AppCompatActivity {
     private Calendar startTime;
     private int duration = 0;
     private static final int MAX_DURATION = 2;
-    private static final int PRICE_PER_HOUR = 750;
+    private double pricePerHour = 0;
 
     private DatabaseReference databaseReference;
     private String userEmail;
@@ -62,6 +62,29 @@ public class BookingActivity extends AppCompatActivity {
         // Initialize Firebase
         databaseReference = FirebaseDatabase.getInstance().getReference();
         timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+
+        // Fetch court price
+        databaseReference.child("courts").orderByChild("name").equalTo(courtName)
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        for (DataSnapshot courtSnapshot : snapshot.getChildren()) {
+                            Court court = courtSnapshot.getValue(Court.class);
+                            if (court != null) {
+                                pricePerHour = court.getPrice();
+                                updateUI();
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e(TAG, "Error fetching court price: " + error.getMessage());
+                }
+            });
 
         // Initialize back button
         btnBack = findViewById(R.id.btnBack);
@@ -177,7 +200,7 @@ public class BookingActivity extends AppCompatActivity {
     private void updateUI() {
         tvSelectedTime.setText("Selected Time: " + timeFormat.format(startTime.getTime()));
         tvDuration.setText("Duration: " + duration + " hour(s)");
-        tvTotalPrice.setText("Total Price: ₱" + (duration * PRICE_PER_HOUR));
+        tvTotalPrice.setText("Total Price: ₱" + (duration * pricePerHour));
 
         // Enable/disable confirm button based on duration
         btnConfirmBooking.setEnabled(duration > 0);
@@ -259,7 +282,7 @@ public class BookingActivity extends AppCompatActivity {
         request.setDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
         request.setTimeSlot(timeFormat.format(startTime.getTime()));
         request.setDuration(duration);
-        request.setTotalPrice(duration * PRICE_PER_HOUR);
+        request.setTotalPrice(duration * pricePerHour);
         request.setStatus("pending");
         request.setBookingDetails("Booking for " + courtName + " - " + duration + " hour(s)");
         request.setPaymentStatus("pending");
@@ -276,7 +299,7 @@ public class BookingActivity extends AppCompatActivity {
                     // Create and start PaymentMenu intent
                     Intent paymentIntent = new Intent(BookingActivity.this, PaymentMenu.class);
                     paymentIntent.putExtra("booking_id", requestId);
-                    paymentIntent.putExtra("total_price", duration * PRICE_PER_HOUR);
+                    paymentIntent.putExtra("total_price", (int)(duration * pricePerHour));
                     paymentIntent.putExtra("court_name", courtName);
                     paymentIntent.putExtra("email", userEmail);
                     paymentIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

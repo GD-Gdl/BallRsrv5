@@ -73,7 +73,7 @@ public class CustomerCourtsAdapter extends RecyclerView.Adapter<CustomerCourtsAd
         void bind(Court court) {
             courtName.setText(court.getName());
             courtDescription.setText(court.getLocation());
-            courtPrice.setText(String.format("$%.2f per hour", court.getPrice()));
+            courtPrice.setText(String.format("₱%.2f per hour", court.getPrice()));
 
             // Load base64 image
             if (court.getImageBase64() != null && !court.getImageBase64().isEmpty()) {

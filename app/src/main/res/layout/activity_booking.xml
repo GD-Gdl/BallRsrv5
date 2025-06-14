@@ -43,18 +43,6 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
-        android:id="@+id/tvPricePerHour"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Price: ₱750 per hour"
-        android:textSize="18sp"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvCourtName"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <TextView
         android:id="@+id/tvMaxDuration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -62,7 +50,7 @@
         android:text="Maximum booking duration: 2 hours"
         android:textSize="16sp"
         android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvPricePerHour"
+        app:layout_constraintTop_toBottomOf="@id/tvCourtName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 

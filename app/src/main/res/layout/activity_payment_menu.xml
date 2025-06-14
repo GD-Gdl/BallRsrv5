@@ -24,10 +24,10 @@
         android:radius="16dp">
 
         <TextView
+            android:id="@+id/tvPricePerHour"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="fee per hour : 750"
             android:textColor="@color/black"
             android:textSize="18sp" />
 
